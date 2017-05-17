@@ -1,0 +1,14 @@
+{
+  "name": "api-payments",
+  "version": "1.0.0",
+  "main": "source/app.js",
+  "repository": "git@github.com:mikaturunen/byop.git",
+  "author": "Mika Turunen <mika.turunen@ymail.com>",
+  "license": "MIT",
+  "scripts": {
+    "start": "node source/app"
+  },
+  "dependencies": {
+    "express": "^4.15.2"
+  }
+}
