@@ -13,6 +13,9 @@ RUN export CP_SHA1=e886899467ced6d7c76027d58c7f7554c2fb2bcc \
 COPY containerpilot.json /etc/containerpilot.json
 ENV CONTAINERPILOT=file:///etc/containerpilot.json
 
+# copy configuration into place
+CMD kong.conf /ect/kong/kong.conf
+
 CMD /bin/containerpilot kong start
 
 EXPOSE 8000 8443 8001 7946
