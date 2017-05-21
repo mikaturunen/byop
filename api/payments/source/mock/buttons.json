@@ -1,0 +1,77 @@
+{
+  "groups": [{
+    "name": "mobile",
+    "payments": [{
+      "name": "Pivo",
+      "id": "123",
+      "callbackUrl": "",
+      "text": "Pivo",
+      "logoUrl": ""
+    },
+    {
+      "name": "Masterpass",
+      "id": "2222",
+      "callbackUrl": "",
+      "text": "Masterpass",
+      "logoUrl": ""
+    },
+    {
+      "name": "MobilePay",
+      "id": "54666",
+      "callbackUrl": "",
+      "text": "MobilePay",
+      "logoUrl": ""
+    }]
+  },
+  {
+    "name": "cards",
+    "payments": [{
+      "name": "MasterCard",
+      "id": "1233",
+      "callbackUrl": "",
+      "text": "",
+      "logoUrl": ""
+    }]
+  },
+  {
+    "name": "bank",
+    "payments": [{
+      "name": "OP",
+      "id": "34553",
+      "callbackUrl": "",
+      "text": "",
+      "logoUrl": ""
+    },
+    {
+      "name": "Nordea",
+      "id": "348762",
+      "callbackUrl": "",
+      "text": "Nordea",
+      "logoUrl": ""
+    },
+    {
+      "name": "Saastopankki",
+      "id": "454",
+      "callbackUrl": "",
+      "text": "Säästöpankki",
+      "logoUrl": ""
+    },
+    {
+      "name": "S-Pankki",
+      "id": "111",
+      "callbackUrl": "",
+      "text": "S-Pankki",
+      "logoUrl": ""
+    }]
+  },
+  {
+    "name": "credit",
+    "payments": [{
+      "name": "Collector",
+      "id": "3453",
+      "callbackUrl": "",
+      "text": "Collector",
+      "logoUrl": ""
+    }]
+  }]
+}
