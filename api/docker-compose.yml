@@ -1,5 +1,4 @@
-
-# Docker Compose file that starts Kong
+# Docker compose shared part that starts the compose chain
 
 ## KONG KONFIGURATION RELATED
 ### Load Balancing
@@ -68,9 +67,7 @@ kong:
   environment:
     - KONG_DATABASE=postgres
     - KONG_PG_HOST=kong-database
-
-
-## Application related
+## Shared payments api compose file that will be used by the generator
 ### Payments API
 payments:
   build: payments/
@@ -79,3 +76,13 @@ payments:
     - 3000:3000
   expose:
     - 3000
+  links:
+    - redis
+
+redis:
+  image: redis:3.2.9-alpine
+  restart: always
+  ports:
+    - 6379:6379
+  expose:
+    - 6379
