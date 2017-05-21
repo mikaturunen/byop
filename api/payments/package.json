@@ -9,6 +9,9 @@
     "start": "node source/app"
   },
   "dependencies": {
-    "express": "^4.15.2"
+    "body-parser": "^1.17.2",
+    "express": "^4.15.2",
+    "konfig": "^0.2.1",
+    "redis": "^2.7.1"
   }
 }
