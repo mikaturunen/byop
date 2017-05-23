@@ -14,8 +14,8 @@ const redisClient = redis.createClient({
   port: config.app.redist_port
 })
 const secondsInDay = 86400
-const clientErrorStatus = 400
-const serverErrorStatus = 502
+const responseCodeClientErrorStatus = 400
+const responseCodeServerErrorStatus = 502
 const errorUnrecognized = 1000
 const errorClientHmac = 2000
 const errorClientNonce = 2001
@@ -62,6 +62,7 @@ app.post('/payment/:merchantId', (request, response) => {
   const merchantId = request.params.merchantId
   const clientHmac = request.body.hmac
 
+  // TODO get merchant key from key tables and log entries of the merchant only with the key so it's easy to remove from the system when required
   console.log(`${merchantId} started /payment/:merchantId`)
 
   new Promise((resolve, reject) => redisClient.get(merchantId, (error, result) => {
@@ -72,12 +73,12 @@ app.post('/payment/:merchantId', (request, response) => {
       console.log(`${merchantId} nonce was not found due to redis error. ${error}`)
       // this is server side error
       // TODO log error into proper location
-      reject({ responseStatusCode: serverErrorStatus, code: errorClientHmac, message: 'Error finding merchant generated nonce' })
+      reject({ responseStatusCode: responseCodeServerErrorStatus, code: errorClientHmac, message: 'Error finding merchant generated nonce' })
     } else if (!result) {
       console.log(`${merchantId} nonce was not present for provided merchantId - not created by merchant.`)
       // this is commonly a client side error
       // TODO log warning and if this keeps repeating with the same merchantId, turn it into a error and report it
-      reject({ responseStatusCode: clientErrorStatus, code: errorClientHmac, message: 'Error finding merchant generated nonce' })
+      reject({ responseStatusCode: responseCodeClientErrorStatus, code: errorClientHmac, message: 'Error finding merchant generated nonce' })
     } else {
       console.log(`${merchantId} nonce found.`)
       resolve(result)
@@ -99,7 +100,7 @@ app.post('/payment/:merchantId', (request, response) => {
       resolve()
     } else {
       console.log(`HMAC did not match. Client sent: '${clientHmac}', system calculated: '${signature}'.`)
-      reject({ responseStatusCode: clientErrorStatus, code: errorClientHmac, message: 'HMAC calculated incorrectly.' })
+      reject({ responseStatusCode: responseCodeClientErrorStatus, code: errorClientHmac, message: 'HMAC calculated incorrectly.' })
     }
   }))
   .then(_ => {
@@ -117,7 +118,7 @@ app.post('/payment/:merchantId', (request, response) => {
     if (error.code && error.message && error.responseStatusCode) {
       response.status(error.responseStatusCode).json({ code: error.code, message: error.message })
     } else {
-      response.status(serverErrorStatus).json({ code: errorUnrecognized, message: 'Unrecognized server error.' })
+      response.status(responseCodeServerErrorStatus).json({ code: errorUnrecognized, message: 'Unrecognized server error.' })
     }
   })
 })
