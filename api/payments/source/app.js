@@ -124,5 +124,5 @@ app.post('/payment/:merchantId', (request, response) => {
 })
 
 app.listen(config.app.port, () => {
-  console.log(`Example app listening on port ${config.app.port}!`)
+  console.log(`Payments API listening on port ${config.app.port}!`)
 })
