@@ -1,9 +1,13 @@
 default:
-  port: 3000
+  port: 3001
   cache_assets: true
-  secret_key: 7EHDWHD9W9UW9FBFB949394BWYFG8WE78F
-  redis_host: redis
-  redis_port: 6379
+  postgresHost: 127.0.0.1
+  postgresPort: 5432
+  postgresUser: postgres
+  postgresPassword: password
+  postgresDatabase: postgres
+  postgresPoolMin: 0
+  postgresPoolMin: 10
 
 development:
   cache_assets: false
