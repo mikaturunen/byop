@@ -1,0 +1,19 @@
+## Shared merchant api compose file that will be used by the generator
+### Merchant API
+payments:
+  build: merchant/
+  restart: always
+  ports:
+    - 3000:3000
+  expose:
+    - 3000
+  links:
+    - postgres
+
+postgres:
+  image: postgres:9.6.3
+  restart: always
+  ports:
+    - 5432:5432
+  expose:
+    - 5432

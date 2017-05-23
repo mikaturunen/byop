@@ -1,0 +1,5 @@
+# End / base for dockerfile used by merchant api
+# This has to be used in conjuctions with the Dockerfile-node-shared dockerfile from dockerfile-templates
+
+EXPOSE  3000
+CMD     [ "npm", "start" ]
