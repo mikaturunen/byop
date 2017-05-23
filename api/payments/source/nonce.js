@@ -1,8 +1,10 @@
+const maxLength = 25
+
 module.exports = length => {
   let last = null
   let repeat = 0
 
-  length = !length ? 25 : length
+  length = !length ? maxLength : length
 
   return () => {
     let now = Math.pow(10, 2) * +new Date()
