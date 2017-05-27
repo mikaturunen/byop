@@ -56,7 +56,7 @@ kong:
   links:
     - kong-database:kong-database
     - consul
-    - payments
+    - psp
   ports:
     - 8000
     - 8443

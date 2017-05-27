@@ -56,7 +56,7 @@ kong:
   links:
     - kong-database:kong-database
     - consul
-    - payments
+    - psp
   ports:
     - 8000
     - 8443
@@ -67,10 +67,10 @@ kong:
   environment:
     - KONG_DATABASE=postgres
     - KONG_PG_HOST=kong-database
-## Shared payments api compose file that will be used by the generator
+docke## Shared payments api compose file that will be used by the generator
 ### Payments API
 payments:
-  build: payments/
+  build: psp/
   restart: always
   ports:
     - 3000:3000
@@ -86,3 +86,11 @@ redis:
     - 6379:6379
   expose:
     - 6379
+
+postgres:
+  image:  postgres:9.6.3
+  restart: always
+  ports:
+    - 5432:5432
+  expose:
+    - 5432

@@ -9,7 +9,7 @@ COPY    source ${home}/source
 
 COPY    package.json ${home}
 RUN     npm install --production
-# End / base for dockerfile used by payments api
+# End / base for dockerfile used by psp api
 # This has to be used in conjuctions with the Dockerfile-node-shared dockerfile from dockerfile-templates
 
 EXPOSE  3000
