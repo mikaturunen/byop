@@ -21,10 +21,15 @@ const paymentWallForMerchant = (request, response) => {
   const merchantApiId = request.params.merchantId
   const clientHmac = request.body.hmac
   let merchantId
+  let merchant_id
 
   console.log('Attempting to start /payment/:merchantId')
-  return ioc['database'].select('api_id').from('merchant_link').where('api_id', merchantApiId).limit(1)
-    .then(results => merchantId = results[0].api_id)
+  return ioc['database'].select('merchant_id', 'api_id').from('merchant_link').where('api_id', merchantApiId).limit(1)
+    .then(results => {
+      // TODO FIX THIS and remove the silly variables
+      merchantId = results[0].api_id
+      merchant_id = results[0].merchant_id
+    })
     .then(_ => {
       console.log(`${merchantId} started /payment/:merchantId`)
       return new Promise((resolve, reject) => ioc['redis'].get(merchantId, (error, result) => {
@@ -55,13 +60,15 @@ const paymentWallForMerchant = (request, response) => {
         }
       }))
     })
-    .then(redisResponse => new Promise((resolve, reject) => {
+    .then(_ => ioc['database'].select().from('merchant').where('id', merchant_id))
+    .then(merchants => new Promise((resolve, reject) => {
+      const merchant = merchants[0]
       console.log(`${merchantId} attempting to validate HMAC.`)
 
       // validating the hmac after nonce was found
       const query = '' + nonce + '+' + merchantId + ''.toUpperCase()
       // TODO use merchant shared secret
-      const signature = crypto.createHmac('sha256', config.app.secret_key)
+      const signature = crypto.createHmac('sha256', merchant.api_key)
         .update(query)
         .digest('hex')
 
