@@ -1,11 +1,12 @@
 // Update with your config settings.
 
 module.exports = {
-  development: {
+  dev: {
     client: 'pg',
     connection: {
       user:     'postgres',
-      password: 'postgres'
+      password: 'password',
+      database: 'postgres'
     },
     pool: {
       min: 1,
@@ -16,11 +17,11 @@ module.exports = {
     }
   },
 
-  staging: {
+  stage: {
     client: 'pg',
     connection: {
       user:     'postgres',
-      password: 'postgres'
+      password: 'password'
     },
     pool: {
       min: 1,
@@ -35,7 +36,7 @@ module.exports = {
     client: 'pg',
     connection: {
       user:     'postgres',
-      password: 'postgres'
+      password: 'password'
     },
     pool: {
       min: 1,
