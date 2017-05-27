@@ -1,0 +1,20 @@
+{
+  "name": "merchant-test-shop",
+  "version": "1.0.0",
+  "main": "source/app.js",
+  "repository": "git@github.com:mikaturunen/byop.git",
+  "author": "Mika Turunen <mika.turunen@ymail.com>",
+  "license": "MIT",
+  "scripts": {
+    "start": "node source/app"
+  },
+  "dependencies": {
+    "body-parser": "^1.17.2",
+    "express": "^4.15.2",
+    "express-validation": "^1.0.2",
+    "knex": "^0.13.0",
+    "konfig": "^0.2.1",
+    "redis": "^2.7.1",
+    "pg": "^6.2.2"
+  }
+}
