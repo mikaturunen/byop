@@ -67,7 +67,6 @@ const paymentWallForMerchant = (request, response) => {
 
       // validating the hmac after nonce was found
       const query = '' + nonce + '+' + merchantId + ''.toUpperCase()
-      // TODO use merchant shared secret
       const signature = crypto.createHmac('sha256', merchant.api_key)
         .update(query)
         .digest('hex')

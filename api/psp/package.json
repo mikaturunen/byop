@@ -1,5 +1,5 @@
 {
-  "name": "api-payments",
+  "name": "api-psp",
   "version": "1.0.0",
   "main": "source/app.js",
   "repository": "git@github.com:mikaturunen/byop.git",
