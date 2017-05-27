@@ -7,6 +7,24 @@ const app = express()
 const crypto = require('crypto')
 const redis = require('redis')
 const nonce = require('./nonce')()
+const knex = require('knex')
+
+// FIXME: update all the uesrs and information for postgres to be something else than the defaults
+const database = knex({
+  client: 'pg',
+  debug: process.env.NODE_ENV !== 'production',
+  connection: {
+    host: config.app.postgresHost,
+    port: config.app.postgresPort,
+    user: config.app.postgresUser,
+    password: config.app.postgresPassword,
+    database: config.app.postgresDatabase
+  },
+  pool: {
+    min: config.app.postgresPoolMin,
+    max: config.app.postgresPoolMax,
+  }
+})
 
 // FIXME: password and login for redis
 const redisClient = redis.createClient({
