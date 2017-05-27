@@ -8,4 +8,5 @@ WORKDIR ${home}
 COPY    source ${home}/source
 
 COPY    package.json ${home}
-RUN     npm install --production
+RUN     npm install -g yarn
+RUN     yarn install --production
