@@ -2,18 +2,13 @@
 const crypto = require('crypto')
 const path = require('path')
 const config = require('konfig')({ path: path.join(__dirname, '..', 'config') })
+const constants = require('../constants')
 
 // TODO replace mock --- 3eb7ce3e-3be2-11e7-a919-92ebcb67fe33
 const mockWall = require('../mock/buttons.json')
 
 // will be injected by initialization
 let ioc;
-
-const responseCodeClientErrorStatus = 400
-const responseCodeServerErrorStatus = 502
-const errorUnrecognized = 1000
-const errorClientHmac = 2000
-const errorClientNonce = 2001
 
 /**
  * Generates the JSON of the payment buttons that are active for the given merchant. Checks validity with nonce.
@@ -37,12 +32,12 @@ const paymentWallForMerchant = (request, response) => {
       console.log(`${merchantId} nonce was not found due to redis error. ${error}`)
       // this is server side error
       // TODO log error into proper location
-      reject({ responseStatusCode: responseCodeServerErrorStatus, code: errorClientHmac, message: 'Error finding merchant generated nonce' })
+      reject({ responseStatusCode: constants.error.http.responseCodeServerStatus, code: constants.error.api.clientHmac, message: 'Error finding merchant generated nonce' })
     } else if (!result) {
       console.log(`${merchantId} nonce was not present for provided merchantId - not created by merchant.`)
       // this is commonly a client side error
       // TODO log warning and if this keeps repeating with the same merchantId, turn it into a error and report it
-      reject({ responseStatusCode: responseCodeClientErrorStatus, code: errorClientHmac, message: 'Error finding merchant generated nonce' })
+      reject({ responseStatusCode: rconstants.error.http.responseCodeClientStatus, code: constants.error.api.clientHmac, message: 'Error finding merchant generated nonce' })
     } else {
       console.log(`${merchantId} nonce found.`)
       resolve(result)
@@ -64,7 +59,7 @@ const paymentWallForMerchant = (request, response) => {
       resolve()
     } else {
       console.log(`HMAC did not match. Client sent: '${clientHmac}', system calculated: '${signature}'.`)
-      reject({ responseStatusCode: responseCodeClientErrorStatus, code: errorClientHmac, message: 'HMAC calculated incorrectly.' })
+      reject({ responseStatusCode: constants.error.http.responseCodeClientStatus, code: constants.error.api.clientHmac, message: 'HMAC calculated incorrectly.' })
     }
   }))
   .then(_ => {
@@ -82,7 +77,7 @@ const paymentWallForMerchant = (request, response) => {
     if (error.code && error.message && error.responseStatusCode) {
       response.status(error.responseStatusCode).json({ code: error.code, message: error.message })
     } else {
-      response.status(responseCodeServerErrorStatus).json({ code: errorUnrecognized, message: 'Unrecognized server error.' })
+      response.status(constants.error.http.responseCodeServerStatus).json({ code: constants.error.api.unrecognized, message: 'Unrecognized server error.' })
     }
   })
 }

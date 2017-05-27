@@ -6,10 +6,7 @@ const app = express()
 const nonce = require('./nonce')()
 const ioc = require('./ioc')
 const payments = require('./resources/payments')
-
-// TODO move into shared constants
-const secondsInDay = 86400
-const responseCodeServerErrorStatus = 502
+const constants = require('./constants')
 
 ioc.init()
   .then(_ => app.listen(config.app.port, () => {
@@ -31,11 +28,11 @@ ioc.init()
       const merchantId = request.params.merchantId
       console.log(`generated nonce ${generatedNonce} for client ${merchantId}.`)
 
-      ioc.get()['redis'].set(merchantId, generatedNonce, 'EX', secondsInDay, (error, result) => {
+      ioc.get()['redis'].set(merchantId, generatedNonce, 'EX', constants.common.secondsInDay, (error, result) => {
         console.log(`redis reply for 'set' ${result},${error}`)
         if (error) {
           console.log(`Error writing in Redis`)
-          response.status(responseCodeServerErrorStatus)
+          response.status(constants.error.http.responseCodeServerStatus)
         } else {
           response.json({ nonce: generatedNonce })
         }
