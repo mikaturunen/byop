@@ -31,7 +31,7 @@ ioc.init()
       ioc.get()['redis'].set(merchantId, generatedNonce, 'EX', constants.common.secondsInDay, (error, result) => {
         console.log(`redis reply for 'set' ${result},${error}`)
         if (error) {
-          console.log(`Error writing in Redis`)
+          console.log(`Error writing into Redis`)
           response.status(constants.error.http.responseCodeServerStatus)
         } else {
           response.json({ nonce: generatedNonce })

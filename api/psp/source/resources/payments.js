@@ -18,76 +18,90 @@ let ioc;
  **/
 const paymentWallForMerchant = (request, response) => {
   const nonce = request.body.nonce
-  const merchantId = request.params.merchantId
+  const merchantApiId = request.params.merchantId
   const clientHmac = request.body.hmac
+  let merchantId
 
-  // TODO get merchant key from key tables and log entries of the merchant only with the key so it's easy to remove from the system when required
-  console.log(`${merchantId} started /payment/:merchantId`)
+  console.log('Attempting to start /payment/:merchantId')
+  return ioc['database'].select('api_id').from('merchant_link').where('api_id', merchantApiId).limit(1)
+    .then(results => merchantId = results[0].api_id)
+    .then(_ => {
+      console.log(`${merchantId} started /payment/:merchantId`)
+      return new Promise((resolve, reject) => ioc['redis'].get(merchantId, (error, result) => {
+        console.log(`${merchantId} attempting to find nonce.`)
 
-  new Promise((resolve, reject) => ioc['redis'].get(merchantId, (error, result) => {
-    console.log(`${merchantId} attempting to find nonce.`)
+        // finding if the merchant generated a nonce to be used
+        if (error) {
+          console.log(`${merchantId} nonce was not found due to redis error. ${error}`)
+          // this is server side error
+          // TODO log error into proper location
+          reject({
+            responseStatusCode: constants.error.http.responseCodeServerStatus,
+            code: constants.error.api.clientHmac,
+            message: 'Error finding merchant generated nonce'
+          })
+        } else if (!result) {
+          console.log(`${merchantId} nonce was not present for provided merchantId - not created by merchant.`)
+          // this is commonly a client side error
+          // TODO log warning and if this keeps repeating with the same merchantId, turn it into a error and report it
+          reject({
+            responseStatusCode: constants.error.http.responseCodeClientStatus,
+            code: constants.error.api.clientHmac,
+            message: 'Error finding merchant generated nonce'
+          })
+        } else {
+          console.log(`${merchantId} nonce found.`)
+          resolve(result)
+        }
+      }))
+    })
+    .then(redisResponse => new Promise((resolve, reject) => {
+      console.log(`${merchantId} attempting to validate HMAC.`)
 
-    // finding if the merchant generated a nonce to be used
-    if (error) {
-      console.log(`${merchantId} nonce was not found due to redis error. ${error}`)
-      // this is server side error
-      // TODO log error into proper location
-      reject({
-        responseStatusCode: constants.error.http.responseCodeServerStatus,
-        code: constants.error.api.clientHmac,
-        message: 'Error finding merchant generated nonce'
-      })
-    } else if (!result) {
-      console.log(`${merchantId} nonce was not present for provided merchantId - not created by merchant.`)
-      // this is commonly a client side error
-      // TODO log warning and if this keeps repeating with the same merchantId, turn it into a error and report it
-      reject({
-        responseStatusCode: rconstants.error.http.responseCodeClientStatus,
-        code: constants.error.api.clientHmac,
-        message: 'Error finding merchant generated nonce'
-      })
-    } else {
-      console.log(`${merchantId} nonce found.`)
-      resolve(result)
-    }
-  }))
-  .then(redisResponse => new Promise((resolve, reject) => {
-    console.log(`${merchantId} attempting to validate HMAC.`)
+      // validating the hmac after nonce was found
+      const query = '' + nonce + '+' + merchantId + ''.toUpperCase()
+      // TODO use merchant shared secret
+      const signature = crypto.createHmac('sha256', config.app.secret_key)
+        .update(query)
+        .digest('hex')
 
-    // validating the hmac after nonce was found
-    const query = '' + nonce + '+' + merchantId + ''.toUpperCase()
-    // TODO use merchant shared secret
-    const signature = crypto.createHmac('sha256', config.app.secret_key)
-      .update(query)
-      .digest('hex')
+      if (signature === clientHmac) {
+        console.log(`${merchantId} HMAC OK.`)
+        // the calculated signatures match, both one calculated by us and one by the client
+        resolve()
+      } else {
+        console.log(`${merchantId} HMAC did not match. Client sent: '${clientHmac}', system calculated: '${signature}'.`)
+        reject({
+          responseStatusCode: constants.error.http.responseCodeClientStatus,
+          code: constants.error.api.clientHmac,
+          message: 'HMAC calculated incorrectly.'
+        })
+      }
+    }))
+    .then(_ => {
+      console.log(`${merchantId} attempting to create open payment.`)
+      // hmac was OK and now we can create the open payment and send the payment buttons to the customer
+      // TODO create open payment
+      const paymentId  = 10
+      console.log(`${merchantId} payment(${paymentId}) OK`)
+      response.json(mockWall)
+    })
+    .catch(error => {
+      // general error handler for the chain
+      console.log(`${merchantId} failed to create open payment through /payment/:merchantId,`, error)
 
-    if (signature === clientHmac) {
-      console.log(`${merchantId} HMAC OK.`)
-      // the calculated signatures match, both one calculated by us and one by the client
-      resolve()
-    } else {
-      console.log(`HMAC did not match. Client sent: '${clientHmac}', system calculated: '${signature}'.`)
-      reject({ responseStatusCode: constants.error.http.responseCodeClientStatus, code: constants.error.api.clientHmac, message: 'HMAC calculated incorrectly.' })
-    }
-  }))
-  .then(_ => {
-    console.log(`${merchantId} attempting to create open payment.`)
-    // hmac was OK and now we can create the open payment and send the payment buttons to the customer
-    // TODO create open payment
-    const paymentId  = 10
-    console.log(`${merchantId} payment(${paymentId}) OK`)
-    response.json(mockWall)
-  })
-  .catch(error => {
-    // general error handler for the chain
-    console.log(`${merchantId} failed to create open payment through /payment/:merchantId. ${error}`)
-
-    if (error.code && error.message && error.responseStatusCode) {
-      response.status(error.responseStatusCode).json({ code: error.code, message: error.message })
-    } else {
-      response.status(constants.error.http.responseCodeServerStatus).json({ code: constants.error.api.unrecognized, message: 'Unrecognized server error.' })
-    }
-  })
+      if (error.code && error.message && error.responseStatusCode) {
+        response.status(error.responseStatusCode).json({
+          code: error.code,
+          message: error.message
+        })
+      } else {
+        response.status(constants.error.http.responseCodeServerStatus).json({
+          code: constants.error.api.unrecognized,
+          message: 'Unrecognized server error.'
+        })
+      }
+    })
 }
 
 module.exports = {
