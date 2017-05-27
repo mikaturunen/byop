@@ -1,7 +1,7 @@
 docke## Shared payments api compose file that will be used by the generator
 ### Payments API
 payments:
-  build: payments/
+  build: psp/
   restart: always
   ports:
     - 3000:3000
@@ -17,3 +17,11 @@ redis:
     - 6379:6379
   expose:
     - 6379
+
+postgres:
+  image:  postgres:9.6.3
+  restart: always
+  ports:
+    - 5432:5432
+  expose:
+    - 5432
