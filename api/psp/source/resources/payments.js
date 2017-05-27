@@ -32,12 +32,20 @@ const paymentWallForMerchant = (request, response) => {
       console.log(`${merchantId} nonce was not found due to redis error. ${error}`)
       // this is server side error
       // TODO log error into proper location
-      reject({ responseStatusCode: constants.error.http.responseCodeServerStatus, code: constants.error.api.clientHmac, message: 'Error finding merchant generated nonce' })
+      reject({
+        responseStatusCode: constants.error.http.responseCodeServerStatus,
+        code: constants.error.api.clientHmac,
+        message: 'Error finding merchant generated nonce'
+      })
     } else if (!result) {
       console.log(`${merchantId} nonce was not present for provided merchantId - not created by merchant.`)
       // this is commonly a client side error
       // TODO log warning and if this keeps repeating with the same merchantId, turn it into a error and report it
-      reject({ responseStatusCode: rconstants.error.http.responseCodeClientStatus, code: constants.error.api.clientHmac, message: 'Error finding merchant generated nonce' })
+      reject({
+        responseStatusCode: rconstants.error.http.responseCodeClientStatus,
+        code: constants.error.api.clientHmac,
+        message: 'Error finding merchant generated nonce'
+      })
     } else {
       console.log(`${merchantId} nonce found.`)
       resolve(result)
