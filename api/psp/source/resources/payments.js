@@ -3,6 +3,8 @@ const crypto = require('crypto')
 const path = require('path')
 const config = require('konfig')({ path: path.join(__dirname, '..', 'config') })
 const constants = require('../constants')
+const R = require('ramda')
+
 
 // TODO replace mock --- 3eb7ce3e-3be2-11e7-a919-92ebcb67fe33
 const mockWall = require('../mock/buttons.json')
@@ -63,10 +65,17 @@ const paymentWallForMerchant = (request, response) => {
     .then(_ => ioc['database'].select().from('merchant').where('id', merchant_id))
     .then(merchants => new Promise((resolve, reject) => {
       const merchant = merchants[0]
-      console.log(`${merchantId} attempting to validate HMAC.`)
+      console.log(`${merchantId} attempting to validate HMAC.`, merchant.api_key)
 
       // validating the hmac after nonce was found
-      const query = '' + nonce + '+' + merchantId + ''.toUpperCase()
+      const query = R.apply(
+        (left, right) => `${left}+${right}`,
+        [nonce, merchantId]
+      )
+      .toUpperCase()
+      console.log('HMAC query:', query)
+      console.log('key:', merchant.api_key)
+
       const signature = crypto.createHmac('sha256', merchant.api_key)
         .update(query)
         .digest('hex')
