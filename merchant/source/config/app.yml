@@ -1,7 +1,11 @@
 default:
-  port: 3000
+  port: 3001
   cache_assets: true
-  secret_key: 7EHDWHD9W9UW9FBFB949394BWYFG8WE78F
+  apiKey: slbaX7reBYScPCuuwQX4fZx7txeyU5MMqywO6o3HNVtnhoheFFiuog2iegi9l5Vc3T19I5QfaJTH8BvNRfIGMLy02h9nleQp8SyQ
+  pspUrl: http://127.0.0.1:3000
+  nonceApi: nonce
+  paymentsApi: payment
+  merchantId: 420e577f-7458-4d9b-a4db-ed46a8be3602
 
 development:
   cache_assets: false
