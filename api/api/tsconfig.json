@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "removeComments": true,
+    "module": "commonjs",
+    "noImplicitAny": false,
+    "strictNullChecks": true,
+    "outDir": "build/"
+  },
+  "lib": [
+    "es2017",
+    "dom"
+  ],
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "out",
+    "node_modules",
+    "dist",
+    "dev",
+    "typings/main.d.ts",
+    "typings/main",
+    "reports"
+  ]
+}
