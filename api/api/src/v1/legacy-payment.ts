@@ -1,5 +1,7 @@
 
-import { OpenPayment } from '../shared-types'
+import { OpenPayment, ClientError } from '../shared-types'
+import { clientErrors } from '../errors'
+
 import * as crypto from 'crypto'
 import * as unirest from 'unirest'
 
@@ -140,9 +142,36 @@ export const createLegacyOpenPayment = (merchantId: string, merchantSecret: stri
     console.log('hmac:', legacyOpenPayment.MAC)
   }
 
-
   return legacyOpenPayment
 }
+
+/**
+ * Attempts to run all the validations that we know are in place in the v1 API before we actually call it and give out sensible errors.
+ *
+ * @param {LegacyOpenPayment} payment Payment object
+ * @returns {Promise} Resolves into a LegacyOpenPayment object and on validation errors rejects into set of errors that are client friendly
+ */
+export const v1SpecificValidations = (payment: LegacyOpenPayment) => new Promise(
+  // TODO fix reject any type
+  (resolve: (payment: LegacyOpenPayment) => void, reject: (error: ClientError) => void) => {
+    const capturesValidationErrors: ClientError[] = []
+    // one of the legacy quirks
+    if (payment.AMOUNT <= 0) {
+      capturesValidationErrors.push(clientErrors.legacy.amount)
+    }
+
+    // TODO keep adding validations from the existing set
+
+    if (capturesValidationErrors.length > 0) {
+      let error = clientErrors.invalidPaymentProperties
+      // attach all the legacy validation errors we found into the error object so the calling client knows exactly what's going on
+      error.rawError = capturesValidationErrors
+      reject(clientErrors.invalidPaymentProperties)
+    } else {
+      resolve(payment)
+    }
+  }
+)
 
 /**
  * Converts the LegacyOpenPayment into a value string for md5 MAC calculation the old payment wall requires.
