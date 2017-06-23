@@ -12,6 +12,7 @@ export interface LegacyOpenPayment {
   RETURN: string
   CANCEL: string
   REJECT: string
+  DEVICE: string
   DELAYED: string
   DELIVERY_DATE: string
   MESSAGE: string
@@ -28,12 +29,15 @@ export interface LegacyOpenPayment {
   POSTOFFICE: string
   EMAIL: string
   DESCRIPTION: string
+  SECRET_KEY: string
+  MAC?: string
 }
 
 const VERSION = '0001'
-const ALGORITHM = '1'
+const ALGORITHM = '3'
 const xml = '10'
-const TYPE = xml
+const DEVICE = xml
+const TYPE = '0'
 
 const bunyan = require('bunyan')
 const log = bunyan.createLogger({ name: 'LegacyOpenPayment' })
@@ -80,28 +84,29 @@ const openPaymentWall = (payload: any, headers?: any) => {
     }))
 }
 
-export const createLegacyOpenPayment = (merchantId: string, openPayment: OpenPayment): LegacyOpenPayment => {
+export const createLegacyOpenPayment = (merchantId: string, merchantSecret: string, openPayment: OpenPayment): LegacyOpenPayment => {
   const item = openPayment.items[0]
   if (!item) {
     // we should never really hit this but IF we hit it..
     throw 'No item in place.'
   }
 
-  const legacyOpenPayment = {
+  const legacyOpenPayment: LegacyOpenPayment = {
     VERSION,
-    STAMP: openPayment.stamp,
+    STAMP: item.stamp,
     AMOUNT: openPayment.amount,
-    REFERENCE: openPayment.reference,
+    REFERENCE: item.reference,
+    MESSAGE: openPayment.message,
+    LANGUAGE: openPayment.language,
     MERCHANT: merchantId,
     RETURN: openPayment.redirect.return,
     CANCEL: openPayment.redirect.cancel,
     REJECT: openPayment.redirect.reject,
     DELAYED: openPayment.redirect.delayed,
     DELIVERY_DATE: item.deliveryDate,
-    MESSAGE: openPayment.message,
-    LANGUAGE: openPayment.language,
     COUNTRY: openPayment.country,
     CURRENCY: openPayment.currency,
+    DEVICE,
     CONTENT: openPayment.content,
     ALGORITHM,
     TYPE,
@@ -111,16 +116,36 @@ export const createLegacyOpenPayment = (merchantId: string, openPayment: OpenPay
     POSTCODE: openPayment.address.postalCode,
     POSTOFFICE: openPayment.address.city,
     EMAIL: openPayment.customer.email,
-    DESCRIPTION: item.description
+    DESCRIPTION: item.description,
+    SECRET_KEY: merchantSecret
   }
 
-  // TODO potentially log anon object from this set?
+  let values = toValueString(legacyOpenPayment)
+  // the old payment wall uses md5...
+  legacyOpenPayment.MAC = crypto.createHash('md5')
+    .update(values)
+    .digest('hex')
+    .toUpperCase()
+
+  if (process.env['NODE_ENV'] === 'test') {
+    console.log('values:', values)
+    console.log('hmac:', legacyOpenPayment.MAC)
+  }
+
 
   return legacyOpenPayment
 }
 
+const toValueString = (p: LegacyOpenPayment) => {
+  let valueString =  `${p.VERSION}+${p.STAMP}+${p.AMOUNT}+${p.REFERENCE}+${p.MESSAGE}+`
+      valueString += `${p.LANGUAGE}+${p.MERCHANT}+${p.RETURN}+${p.CANCEL}+${p.REJECT}+`
+      valueString += `${p.DELAYED}+${p.COUNTRY}+${p.CURRENCY}+${p.DEVICE}+${p.CONTENT}+`
+      valueString += `${p.TYPE}+${p.ALGORITHM}+${p.DELIVERY_DATE}+${p.FIRSTNAME}+${p.FAMILYNAME}+`
+      valueString += `${p.ADDRESS}+${p.POSTCODE}+${p.POSTOFFICE}+${p.SECRET_KEY}`
+
+  return valueString
+}
+
 export const sendLegacyPayment = (openPayment: LegacyOpenPayment) => {
-  let values = Object.keys(openPayment).map(key => openPayment[key]).join('+')
-  let properties = Object.keys(openPayment).map(key => key).join('+')
   return openPaymentWall(openPayment)
 }
