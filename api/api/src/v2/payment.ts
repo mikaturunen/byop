@@ -9,6 +9,12 @@ const log = bunyan.createLogger({ name: 'api-v2' })
 // TODO remove completel once we are done with tests, this is not required at all.
 const SECRET = 'SAIPPUAKAUPPIAS'
 
+/**
+ * Express rest api handler for v2 payments. Completely new API that does not talk into the old v1 database. Breaks compatibility with v1 payments completely.
+ *
+ * @param {express.Request} request Express request
+ * @param {express.Response} response Express response
+ */
 export const v2SinglePaymentHandler = (request: express.Request, response: express.Response) => {
   const merchantId = request.params.merchantId
   const openPayment: OpenPayment = request.body.payment
