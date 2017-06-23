@@ -1,6 +1,6 @@
 export interface ClientError {
   http: number
-  code: number
+  code: string
   message: string
   rawError?: Object
 }
@@ -10,6 +10,13 @@ export interface MerchantCustomer {
   firstName: string
   lastName: string
   email: string
+}
+
+export interface PaymentSet {
+  merchantId: string
+  merchantSecret: string
+  clientHmac: string
+  payment: OpenPayment
 }
 
 export interface PaymentItem {
