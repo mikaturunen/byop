@@ -6,6 +6,8 @@ const crypto = require('crypto')
 
 chai.use(chaiHttp)
 
+process.env.NODE_ENV = 'test'
+
 describe('Legacy payment wrapper', () => {
   describe('POST /api/v1/overlay/:merchantId/payment/open/single', _ => {
     it('with empty payment', done => {
@@ -28,32 +30,38 @@ describe('Legacy payment wrapper', () => {
     it('with a valid payment', done => {
       let body = {
         payment: {
-          amount: 100,
+          amount: 1000,
           reference: 'string',
           stamp: 'string',
           items: [{
-            reference: 'string',
-            stamp: 'string',
-            amount: 100,
-            description: 'string',
+            reference: '12344',
+            stamp: '11111111',
+            amount: 1000,
+            description: '',
             categoryCode: '12332',
-            deliveryDate: '20171231',
+            deliveryDate: '20170602',
           }],
-          content: 0,
-          language: 'FIN',
-          country: 'FI',
+          content: 1,
+          language: 'FI',
+          country: 'FIN',
           currency: 'EUR',
-          message: 'Testing, testing',
+          message: '',
           customer: {
-            firstName: 'Matti',
-            lastName: 'Selfie',
+            firstName: 'Keijo',
+            lastName: 'Romanof',
             email: 'matti@couch.io'
           },
           redirect: {
-
+            return: 'http://demo1.checkout.fi/xml2.php?test=1',
+            cancel: 'http://demo1.checkout.fi/xml2.php?test=2',
+            reject: '',
+            delayed: ''
           },
           address: {
-
+            postalCode: '00100',
+            streetAddress: 'Katutie 12',
+            city: 'Helsinki',
+            country: 'Finland'
           }
         },
         hmac: 'NOT CALCULATED'
@@ -67,7 +75,7 @@ describe('Legacy payment wrapper', () => {
 
       chai
         .request(server)
-        .post('/api/v1/overlay/12345678/payment/open/single')
+        .post('/api/v1/overlay/375917/payment/open/single')
         .send(body)
         .end((error, response) => {
           response.status.should.eql(200)
