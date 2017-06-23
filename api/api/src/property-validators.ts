@@ -6,10 +6,15 @@ import { OpenPayment, PaymentItem, MerchantCustomer } from './shared-types'
 const minimumAmountInCentsIsEuro = 100
 const minimumStringLength = 2
 const maxReferenceLength = 100
+
 const isValidAmount = (payment: OpenPayment, key: string) => payment[key] >= minimumAmountInCentsIsEuro
+
 const isValidCurrency = (payment: OpenPayment, key: string) => payment[key].length >= minimumStringLength
+
 const isValidReference = (payment: OpenPayment, key: string) => payment[key].length >= minimumStringLength && payment[key].length < maxReferenceLength
+
 const isValidStamp = (payment: OpenPayment, key: string) => payment[key] >= 1
+
 const isValidItems = (payment: OpenPayment, key: string) => {
   if (payment[key].length > 0) {
     const allItemsValid = true
@@ -19,11 +24,16 @@ const isValidItems = (payment: OpenPayment, key: string) => {
     return false
   }
 }
+
 const allowedContentTypes = [0,1]
 const isValidContent = (payment: OpenPayment, key: string) => allowedContentTypes.indexOf(payment[key]) !== -1
+
 const isValidCountry = (payment: OpenPayment, key: string) => payment[key].length >= minimumStringLength
+
 const isValidLanguage = (payment: OpenPayment, key: string) => payment[key].length >= minimumStringLength
-const isValidMessage = (payment: OpenPayment, key: string) => payment[key].length >= minimumStringLength && payment[key].length < maxReferenceLength
+
+const isValidMessage = (payment: OpenPayment, key: string) => payment[key].length < maxReferenceLength
+
 const isValidCustomer = (payment: OpenPayment, key: string) => {
   const validEmail = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
 
@@ -32,6 +42,7 @@ const isValidCustomer = (payment: OpenPayment, key: string) => {
     customer.lastName.length >= 2 && customer.lastName.length < 30 &&
     validEmail.test(customer.email)
 }
+
 const isValidMock = (payment: OpenPayment, key: string) => { return true }
 
 // super simple checker that all properties are present
@@ -50,6 +61,13 @@ const properties = [
   { key: 'address', validator: isValidMock },
 ]
 
+/**
+ * Simple property validator.
+ * TODO turn this into a middleware for express and make the validators better.
+ *
+ * @param {OpenPayment} payment Payment object.
+ * @returns {Object} Returns object with missingProperties and invalidProperties and properties.
+ */
 export const validateProperties = (payment: OpenPayment) => {
 
   // collect all the properties that
