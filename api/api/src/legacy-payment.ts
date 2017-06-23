@@ -1,9 +1,7 @@
 
 import { OpenPayment } from './shared-types'
 import * as crypto from 'crypto'
-
 import * as unirest from 'unirest'
-
 
 export interface LegacyOpenPayment {
   VERSION: string
