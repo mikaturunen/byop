@@ -55,7 +55,7 @@ const transformLegacyXmlToPaymentWall = (xml: string) => new Promise((resolve: a
       console.log(merchant)
       console.log(payments)
 
-      let wall: PaymentWall = {
+      const wall: PaymentWall = {
         payment: {
           id: R.head(result.trade.id || ['']),
           description: R.head(result.trade.description || ['']),
