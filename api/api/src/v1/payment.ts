@@ -1,7 +1,7 @@
 import * as express from 'express'
 import * as bunyan from 'bunyan'
 import { OpenPayment, PaymentSet, ClientError } from '../shared-types'
-import { createLegacyOpenPayment, sendLegacyPayment } from './legacy-payment'
+import { createLegacyOpenPayment, sendLegacyPayment, v1SpecificValidations } from './legacy-payment'
 import { clientErrors, serverErrors } from '../errors'
 import { preparePayment } from '../payment-preparation'
 
@@ -27,6 +27,7 @@ export const v1SinglePaymentHandler = (request: express.Request, response: expre
 
   preparePayment(merchantId, merchantSecret, clientHmac, openPayment)
     .then(paymentSet => createLegacyOpenPayment(paymentSet.merchantId, paymentSet.merchantSecret, paymentSet.payment))
+    .then(payment => v1SpecificValidations(payment))
     .then(payment => sendLegacyPayment(payment))
     .then((result: any) => {
       log.info(`Result from legacy payment wall`, result)

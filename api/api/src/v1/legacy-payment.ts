@@ -1,9 +1,11 @@
 
-import { OpenPayment, ClientError } from '../shared-types'
+import { OpenPayment, ClientError, PaymentWall } from '../shared-types'
 import { clientErrors } from '../errors'
 
 import * as crypto from 'crypto'
 import * as unirest from 'unirest'
+import * as xml2js from 'xml2js'
+import * as R from 'ramda'
 
 export interface LegacyOpenPayment {
   VERSION: string
@@ -35,6 +37,78 @@ export interface LegacyOpenPayment {
   MAC?: string
 }
 
+// We make set of assumptions based on the knowledge of the wall behavior.
+const transformLegacyXmlToPaymentWall = (xml: string) => new Promise((resolve: any, reject: any) => {
+  log.info('Starting to parse XML')
+  // TODO type the result object properly once we have arrived in a consesus of what the payment wall JSON should look like
+  xml2js.parseString(xml, (error: string, result: any) => {
+    if (error) {
+      log.error('Error in parsing the v1 payment wall XML:', error)
+      // TODO reject properly with ClientError
+      reject({ code: 'xxxx', message: 'Error', rawError: error, http: 502 })
+    } else {
+      console.log('GOT RESULT FROM XML2JSON:', result)
+      // parse all the properties from the XML with quite a bit of assumptions on the behavior
+      const merchant = R.head(result.trade.merchant || [{}])
+      const payments = R.head(result.trade.payments || [{}])
+
+      console.log(merchant)
+      console.log(payments)
+
+      let wall: PaymentWall = {
+        payment: {
+          id: R.head(result.trade.id || ['']),
+          description: R.head(result.trade.description || ['']),
+          status: R.head(result.trade.status || ['']),
+          stamp: R.head(result.trade.stamp || ['']),
+          version: R.head(result.trade.version || ['0001']),
+          reference: R.head(result.trade.reference || ['']),
+          language: R.head(result.trade.language || ['']),
+          content: R.head(result.trade.content || ['']),
+          deliveryDate: R.head(result.trade.deliveryDate || ['']),
+          type: R.head(result.trade.type || ['0']),
+          algorithm: R.head(result.trade.algorithm || ['']),
+          paymentUrl: R.head(result.trade.paymentURL || ['']),
+          customer: {
+            firstName: R.head(result.trade.firstname || ['']),
+            lastName: R.head(result.trade.lastname || ['']),
+            email: R.head(result.trade.customerEmail || [''])
+          },
+          address: {
+            streetAddress: R.head(result.trade.address || ['']),
+            postalCode: R.head(result.trade.postcode || ['']),
+            city: R.head(result.trade.postoffice || ['']),
+            country: R.head(result.trade.country || [''])
+          },
+          redirect: {
+            returnUrl: R.head(result.trade.returnURL || ['']),
+            returnHmac: R.head(result.trade.returnMAC || ['']),
+            cancelUrl:  R.head(result.trade.cancelURL || ['']),
+            cancelHmac: R.head(result.trade.cancelMAC || ['']),
+            rejectUrl: R.head(result.trade.rejectURL || ['']),
+            // No rejectMAC present in XML?
+            rejectMac: R.head(result.trade.rejectMAC || ['']),
+            delayedUrl: R.head(result.trade.delayedURL || ['']),
+            delayedMac: R.head(result.trade.delayedMAC || [''])
+          }
+        },
+        merchant: {
+          id: R.head(merchant.id || ['']),
+          company: R.head(merchant.company || ['']),
+          vatId: R.head(merchant.vatId || ['']),
+          name: R.head(merchant.name || ['']),
+          email: R.head(merchant.email || ['']),
+          phone: R.head(merchant.helpdeskNumber || ['']),
+        },
+        buttons: []
+      }
+
+      console.log(JSON.stringify(wall, null, 2))
+      resolve(wall)
+    }
+  });
+})
+
 const VERSION = '0001'
 const ALGORITHM = '3'
 const xml = '10'
@@ -62,28 +136,32 @@ const openPaymentWall = (payload: any, headers?: any) => {
 
   log.info(`Opening payment wall.`)
 
+  // TODO type the resolve and reject once you have figured out the actual xml parsing and handling into a pretty json
   return new Promise((resolve: any, reject: any) => unirest
     .post('https://payment.checkout.fi')
     .headers(headers)
     .send(payload)
     .end((result: any) => {
-      log.info('Received reply for payment api:', result.body)
-
+      log.info(`Payment wall replied.. parsing reply`)
       // First make sure we have handled the http error codes
       if (successCodes.indexOf(result.code) === -1) {
         // ERROR
         const message = 'Received http error'
         log.error(message)
+        // TODO start using proper ClientError objects
         reject({ status: 502, message: message, raw: result.body })
       } else if (result.body === checkoutEmptyPostError) {
         // TODO handle the remaining  errors the payment wall can give inside a HTTP 200 OK-
+        // TODO start using proper ClientError objects
         // HTTP status was okay but something was configured incorrectly or miscommunicated
         log.error('HTTP status was okay but something was configured incorrectly or miscommunicated:', result.code)
         reject({ status: 500, message: 'Misconfiguration', raw: result.body })
       } else {
+        console.log('result from xml', result.body)
         resolve(result.body)
       }
     }))
+    .then((xml: string) => transformLegacyXmlToPaymentWall(xml))
 }
 
 /**
