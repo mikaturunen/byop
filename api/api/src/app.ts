@@ -25,7 +25,7 @@ app.post('/api/v1/overlay/:merchantId/payment/open/sis', v1ShopInShopPaymentHand
 
 app.post('/api/v2/:merchantId/payment/open/single', v2SinglePaymentHandler)
 
-app.listen(port, () => console.log(`API overlay listening on port ${port}!`))
+app.listen(port, _ => log.info(`API overlay listening on port ${port}!`))
 
 // This is only used so we can actually require the whole express.js structure in test frameworks for testing purposes
 module.exports = app
