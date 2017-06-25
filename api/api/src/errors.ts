@@ -35,6 +35,7 @@ export const clientErrors = {
   }
 }
 
+// These serverErrors are errors that were caused by something on the server and not directly due to client input
 export const serverErrors = {
   legacy: {
     error: <ClientError>{
@@ -42,5 +43,11 @@ export const serverErrors = {
       code: ``,
       message: 'Error in v1, check rawError for details.'
     }
+  },
+  // TODO make this better
+  general: <ClientError>{
+    http: 502,
+    code: `xxxx`,
+    message: 'We have no idea what went wrong, we are truly sorry for this, please get in touch with our developers at `...`.'
   }
 }

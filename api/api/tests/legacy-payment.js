@@ -3,6 +3,7 @@ const chaiHttp = require('chai-http')
 const server = require('../build/app')
 const should = chai.should()
 const crypto = require('crypto')
+const expect = chai.expect
 
 chai.use(chaiHttp)
 
@@ -22,7 +23,8 @@ describe('Legacy payment wrapper', () => {
           response.status.should.eql(502)
           response.body.should.be.a('object')
           response.body.should.have.property('code').eql('xxxx')
-          response.body.should.have.property('message').eql('TODO: come up with generic error for worst case')
+          response.body.should.have.property('message').eql('We have no idea what went wrong, we are truly sorry for this, please get in touch with our developers at `...`.')
+
           done()
         })
     })
@@ -52,10 +54,10 @@ describe('Legacy payment wrapper', () => {
             email: 'matti@couch.io'
           },
           redirect: {
-            return: 'http://demo1.checkout.fi/xml2.php?test=1',
-            cancel: 'http://demo1.checkout.fi/xml2.php?test=2',
-            reject: '',
-            delayed: ''
+            return:  'http://demo1.checkout.fi/xml2.php?test=1',
+            cancel:  'http://demo1.checkout.fi/xml2.php?test=2',
+            reject:  'http://demo1.checkout.fi/xml2.php?test=3',
+            delayed: 'http://demo1.checkout.fi/xml2.php?test=4'
           },
           address: {
             postalCode: '00100',
@@ -80,7 +82,11 @@ describe('Legacy payment wrapper', () => {
         .end((error, response) => {
           response.status.should.eql(200)
           response.body.should.be.a('object')
-          response.body.should.have.property('code').eql('200')
+
+          const payment = response.body
+          expect(payment).to.have.property('merchant')
+          expect(payment.merchant).to.have.property('id').to.equal('375917')
+
           done()
         })
     })

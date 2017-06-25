@@ -37,7 +37,8 @@ export const v1SinglePaymentHandler = (request: express.Request, response: expre
     .catch((error: ClientError) => {
       if (!error.http || !error.code) {
         log.error(`Unhandled error: `, error)
-        response.status(502).json({ code: 'xxxx', message: 'TODO: come up with generic error for worst case' })
+        // TODO list this error into an alarm list that the developers will follow and fix as these emerge
+        response.status(502).json(serverErrors.general)
       } else {
         log.error(`Error: `, error)
         response.status(error.http).json(error)
