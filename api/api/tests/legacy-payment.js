@@ -32,7 +32,7 @@ describe('Legacy payment wrapper', () => {
     it('with a valid payment', done => {
       let body = {
         payment: {
-          amount: 1000,
+          totalAmount: 1000,
           reference: 'string',
           stamp: 'string',
           items: [{

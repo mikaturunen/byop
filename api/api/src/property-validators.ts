@@ -1,13 +1,30 @@
 import { OpenPayment, PaymentItem, MerchantCustomer } from './shared-types'
+import * as R from 'ramda'
 
 
 // TODO use proper validations and make it a middleware
 // TODO implement better validators instead of these super simple ones
-const minimumAmountInCentsIsEuro = 100
+const minimumAmountIsZero = 0
 const minimumStringLength = 2
 const maxReferenceLength = 100
 
-const isValidAmount = (payment: OpenPayment, key: string) => payment[key] >= minimumAmountInCentsIsEuro
+const isValidAmount = (payment: OpenPayment, key: string) => {
+  let isValid = payment[key] > minimumAmountIsZero && payment.items.length > 0
+
+  if (isValid) {
+    const total = R.sum(
+      R.pluck('amount')(payment.items)
+    )
+    if (process.env['NODE_ENV'] === 'test') {
+      console.log('test result, total', total, 'and expected', payment[key])
+    }
+
+    // Making sure the marked total for the basket is the same as the total from the item
+    isValid = payment[key] === total
+  }
+
+  return isValid
+}
 
 const isValidCurrency = (payment: OpenPayment, key: string) => payment[key].length >= minimumStringLength
 
@@ -47,7 +64,7 @@ const isValidMock = (payment: OpenPayment, key: string) => { return true }
 
 // super simple checker that all properties are present
 const properties = [
-  { key: 'amount', validator: isValidAmount },
+  { key: 'totalAmount', validator: isValidAmount },
   { key: 'currency', validator: isValidCurrency },
   { key: 'reference', validator: isValidReference },
   { key: 'stamp', validator: isValidMock },

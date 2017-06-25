@@ -194,9 +194,9 @@ export const createLegacyOpenPayment = (merchantId: string, merchantSecret: stri
 
   const legacyOpenPayment: LegacyOpenPayment = {
     VERSION,
-    STAMP: item.stamp,
-    AMOUNT: openPayment.amount,
-    REFERENCE: item.reference,
+    STAMP: openPayment.stamp,
+    AMOUNT: openPayment.totalAmount,
+    REFERENCE: openPayment.reference,
     MESSAGE: openPayment.message,
     LANGUAGE: openPayment.language,
     MERCHANT: merchantId,
@@ -204,6 +204,7 @@ export const createLegacyOpenPayment = (merchantId: string, merchantSecret: stri
     CANCEL: openPayment.redirect.cancel,
     REJECT: openPayment.redirect.reject,
     DELAYED: openPayment.redirect.delayed,
+    // TODO: decide on should it be item level in case of legacy payment of payment level..
     DELIVERY_DATE: item.deliveryDate,
     COUNTRY: openPayment.country,
     CURRENCY: openPayment.currency,
@@ -247,7 +248,7 @@ export const v1SpecificValidations = (payment: LegacyOpenPayment) => new Promise
   (resolve: (payment: LegacyOpenPayment) => void, reject: (error: ClientError) => void) => {
     const capturesValidationErrors: ClientError[] = []
     // one of the legacy quirks
-    if (payment.AMOUNT <= 0) {
+    if (payment.AMOUNT <= 0.01) {
       capturesValidationErrors.push(clientErrors.legacy.amount)
     }
 

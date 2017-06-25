@@ -38,7 +38,7 @@ export const preparePayment = (merchantId: string, merchantSecret: string, clien
   // TODO once the idea is tested, remove any types
   return new Promise((resolve: (payment: PaymentSet) => void, reject: any) => {
     // 1. validate hmac
-    log.info(`Checking payment hmac (mid: ${merchantId}, ref: ${payment.reference}, stamp: ${payment.stamp}, amount: ${payment.amount})`)
+    log.info(`Checking payment hmac (mid: ${merchantId}, ref: ${payment.reference}, stamp: ${payment.stamp}, amount: ${payment.totalAmount})`)
 
     if (!isValidHmac(clientHmac, merchantSecret, payment)) {
       log.warn(`Hmac validation for ${merchantId} failed. Incorrect hmac was: ${clientHmac}.`)
@@ -46,10 +46,10 @@ export const preparePayment = (merchantId: string, merchantSecret: string, clien
       return
     }
 
-    log.info(`Payment hmac OK (mid: ${merchantId}, ref: ${payment.reference}, stamp: ${payment.stamp}, amount: ${payment.amount})`)
+    log.info(`Payment hmac OK (mid: ${merchantId}, ref: ${payment.reference}, stamp: ${payment.stamp}, amount: ${payment.totalAmount})`)
 
     // 2. validate properties -- first check are we missing any properties
-    log.info(`Checking payment property validation (mid: ${merchantId}, ref: ${payment.reference}, stamp: ${payment.stamp}, amount: ${payment.amount})`)
+    log.info(`Checking payment property validation (mid: ${merchantId}, ref: ${payment.reference}, stamp: ${payment.stamp}, amount: ${payment.totalAmount})`)
 
     const paymentInfo = validateProperties(payment)
     if (paymentInfo.missingProperties.length > 0) {
@@ -73,7 +73,7 @@ export const preparePayment = (merchantId: string, merchantSecret: string, clien
       return
     }
 
-    log.info(`Checking payment property validation OK (mid: ${merchantId}, ref: ${payment.reference}, stamp: ${payment.stamp}, amount: ${payment.amount})`)
+    log.info(`Checking payment property validation OK (mid: ${merchantId}, ref: ${payment.reference}, stamp: ${payment.stamp}, amount: ${payment.totalAmount})`)
 
     resolve({
       merchantId,

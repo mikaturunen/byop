@@ -56,7 +56,7 @@ export interface Merchant {
 
 // TODO lift interface into a shared location so that's its easy to take and use elsewhere too
 export interface OpenPayment {
-  amount: number
+  totalAmount: number
   currency: string
   reference: string
   stamp: string
