@@ -12,6 +12,11 @@ export const clientErrors = {
       code: `${v1}${paymentId}001`,
       message: 'Amount if not allowed to be 0 or less.'
     },
+    overlay: <ClientError>{
+      http: 400,
+      code: `${v1}${paymentId}100`,
+      message: 'General error from v1 that has not been configured into overlay yet. Check rawError for details.'
+    }
   },
   hmac: <ClientError>{
     http: 400,
@@ -31,4 +36,11 @@ export const clientErrors = {
 }
 
 export const serverErrors = {
+  legacy: {
+    error: <ClientError>{
+      http: 502,
+      code: ``,
+      message: 'Error in v1, check rawError for details.'
+    }
+  }
 }
