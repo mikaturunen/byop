@@ -9,6 +9,7 @@ import * as bunyan from 'bunyan'
 import * as bodyParser from 'body-parser'
 
 import { v1SinglePaymentHandler } from './v1/payment'
+import { v1ShopInShopPaymentHandler } from './v1/sis-payment'
 import { v2SinglePaymentHandler } from './v2/payment'
 
 const port = process.env['SERVER_PORT'] ? process.env['SERVER_PORT'] : 3002
@@ -20,6 +21,7 @@ app.use(bodyParser.json())
 app.disable('x-powered-by')
 
 app.post('/api/v1/overlay/:merchantId/payment/open/single', v1SinglePaymentHandler)
+app.post('/api/v1/overlay/:merchantId/payment/open/sis', v1ShopInShopPaymentHandler)
 
 app.post('/api/v2/:merchantId/payment/open/single', v2SinglePaymentHandler)
 
