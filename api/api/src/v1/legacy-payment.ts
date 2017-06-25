@@ -128,7 +128,7 @@ const DEVICE = xml
 const TYPE = '0'
 
 const bunyan = require('bunyan')
-const log = bunyan.createLogger({ name: 'LegacyOpenPayment' })
+const log = bunyan.createLogger({ name: 'api-v1-overlay-payment' })
 
 const successCodes = [ 200 ]
 const checkoutError = [ 200 ]
