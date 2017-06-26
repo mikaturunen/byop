@@ -130,53 +130,6 @@ const TYPE = '0'
 const bunyan = require('bunyan')
 const log = bunyan.createLogger({ name: 'api-v1-overlay-payment' })
 
-const successCodes = [ 200 ]
-const checkoutError = [ 200 ]
-
-// TODO handle all the special cases that are actually considered errors even though they are HTTP 200 OK
-const checkoutEmptyPostError = 'Yhtään tietoa ei siirtynyt POST:lla checkoutille'
-
-/**
- * Creates an open payment.
- *
- * @param {LegacyOpenPayment} payload Request POST body
- * @param {Object} headers Complete unirest headers. Defaults to empty headers.
- * @returns {Promise} Resolves to payment wall and rejects on HTTP error or HTTP 200 OK when it's CoF specific error.
- */
-const openPaymentWall = (payload: LegacyOpenPayment, headers?: {[key: string]: string}) => {
-  headers = headers ? headers : {}
-
-  log.info(`Opening payment wall.`)
-
-  // TODO type the resolve and reject once you have figured out the actual xml parsing and handling into a pretty json
-  return new Promise((resolve: any, reject: (error: ClientError) => void) => unirest
-    .post('https://payment.checkout.fi')
-    .headers(headers)
-    .send(payload)
-    .end((result: any) => {
-      log.info(`Payment wall replied.. parsing reply`)
-      // First make sure we have handled the http error codes
-      if (successCodes.indexOf(result.code) === -1) {
-        // ERROR
-        let clientError = serverErrors.legacy.error
-        clientError.rawError = result.body
-        reject(clientError)
-      } else if (result.body === checkoutEmptyPostError) {
-        // TODO handle the remaining  errors the payment wall can give inside a HTTP 200 OK-
-        // TODO start using proper ClientError objects
-        // HTTP status was okay but something was configured incorrectly or miscommunicated
-        log.error('HTTP status was 200 but something was configured incorrectly or miscommunicated into v1:', result.body, result.code)
-        let clientError = clientErrors.legacy.overlay
-        clientError.rawError = result.body
-        reject(clientError)
-      } else {
-        console.log('result from xml', result.body)
-        resolve(result.body)
-      }
-    }))
-    .then((xml: string) => transformLegacyXmlToPaymentWall(xml))
-}
-
 /**
  * Transforms a valid json formatted payment object into a legacy format object that allows us to open the legacy payment wall.
  *
@@ -235,6 +188,53 @@ export const createLegacyOpenPayment = (merchantId: string, merchantSecret: stri
   }
 
   return legacyOpenPayment
+}
+
+const successCodes = [ 200 ]
+const checkoutError = [ 200 ]
+
+// TODO handle all the special cases that are actually considered errors even though they are HTTP 200 OK
+const checkoutEmptyPostError = 'Yhtään tietoa ei siirtynyt POST:lla checkoutille'
+
+/**
+ * Creates an open payment.
+ *
+ * @param {LegacyOpenPayment} payload Request POST body
+ * @param {Object} headers Complete unirest headers. Defaults to empty headers.
+ * @returns {Promise} Resolves to payment wall and rejects on HTTP error or HTTP 200 OK when it's CoF specific error.
+ */
+const openPaymentWall = (payload: LegacyOpenPayment, headers?: {[key: string]: string}) => {
+  headers = headers ? headers : {}
+
+  log.info(`Opening payment wall.`)
+
+  // TODO type the resolve and reject once you have figured out the actual xml parsing and handling into a pretty json
+  return new Promise((resolve: any, reject: (error: ClientError) => void) => unirest
+    .post('https://payment.checkout.fi')
+    .headers(headers)
+    .send(payload)
+    .end((result: any) => {
+      log.info(`Payment wall replied.. parsing reply`)
+      // First make sure we have handled the http error codes
+      if (successCodes.indexOf(result.code) === -1) {
+        // ERROR
+        let clientError = serverErrors.legacy.error
+        clientError.rawError = result.body
+        reject(clientError)
+      } else if (result.body === checkoutEmptyPostError) {
+        // TODO handle the remaining  errors the payment wall can give inside a HTTP 200 OK-
+        // TODO start using proper ClientError objects
+        // HTTP status was okay but something was configured incorrectly or miscommunicated
+        log.error('HTTP status was 200 but something was configured incorrectly or miscommunicated into v1:', result.body, result.code)
+        let clientError = clientErrors.legacy.overlay
+        clientError.rawError = result.body
+        reject(clientError)
+      } else {
+        console.log('result from xml', result.body)
+        resolve(result.body)
+      }
+    }))
+    .then((xml: string) => transformLegacyXmlToPaymentWall(xml))
 }
 
 /**

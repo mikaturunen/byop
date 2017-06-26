@@ -38,7 +38,7 @@ const transformLegacyXmlToPaymentWall = (xml: string) => new Promise((resolve: T
   });
 })
 
-const VERSION = '0001'
+const VERSION = '0002'
 const ALGORITHM = '3'
 const xml = '10'
 const DEVICE = xml
@@ -99,24 +99,86 @@ const openPaymentWall = (payload: LegacyOpenPaymentSis, headers?: {[key: string]
  *
  * @param {string} merchantId ID of the Merchant, also known as 'mid'
  * @param {string} merchantSecret Shared secret for specific merchant.
- * @param {OpenPayment} openPayment The specific payment object.
- * @returns {LegacyOpenPaymentSis} Object that can be used together with Checkouts existing payment wall.
+ * @param {OpenPayment} payment The specific payment object.
+ * @returns {string} The XML string that needs to be sent to the legacy SiS payment wall
  */
-export const createLegacyOpenPayment = (merchantId: string, merchantSecret: string, openPayment: OpenPayment): LegacyOpenPaymentSis => {
-  const item = openPayment.items[0]
-  if (!item) {
-    // we should never really hit this but IF we hit it..
-    throw 'No item in place.'
-  }
+export const createLegacyOpenPayment = (merchantId: string, merchantSecret: string, payment: OpenPayment): string => {
+  // TODO Clean up this string crap into a simple xml lib as soon as it's tested to work properly
 
-  const legacyOpenPayment: LegacyOpenPaymentSis = {}
+  let createPaymentXml = `
+    <?xml version="1.0"?>
+    <checkout xmlns="http://checkout.fi/request">
+      <request type="aggregator" test="false">
+        <aggregator>${merchantId}</aggregator>
+        <version>${VERSION}</version>
+        <stamp>${payment.stamp}</stamp>
+        <reference>${payment.reference}</reference>
+        <description></description>
+        <device>${DEVICE}</device>
+        <content>${payment.content}</content>
+        <type>${TYPE}</type>
+        <algorithm>${ALGORITHM}</algorithm>
+        <currency>${payment.currency}</currency>
+        <token>false</token>
+        <commit>true</commit>
+        <items>
+        `
 
-  if (process.env['NODE_ENV'] === 'test') {
-    // console.log('values:', )
-    // console.log('hmac:', legacyOpenPayment.MAC)
-  }
+  payment.items.forEach(item => {
+    // TODO item level control element, name it to something that makes more sense.
+    createPaymentXml = createPaymentXml + `
+          <item>
+            <code>${item.code}</code>
+            <stamp>${item.stamp}</stamp>
+            <description>${item.description}</description>
+            <price currency="${payment.currency}" vat="${item.vatPercentage}">${item.amount}</price>
+            <merchant>${item.merchantId}</merchant>
+            <control></control>
+            <reference>${item.reference}</reference>
+          </item>
+          `
+  })
 
-  return legacyOpenPayment
+  createPaymentXml = createPaymentXml + `
+          <amount currency="${payment.currency}">${payment.totalAmount}</amount>
+          `
+
+  createPaymentXml = createPaymentXml + `
+        </items>
+        <buyer>
+          <company vatid=""></company>
+          <firstname></firstname>
+          <familyname></familyname>
+          <address><![CDATA[ ]]></address>
+          <postalcode></postalcode>
+          <postaloffice></postaloffice>
+          <country></country>
+          <email></email>
+          <gsm></gsm>
+          <language></language>
+        </buyer>
+        <delivery>
+          <date></date>
+          <company vatid=""></company>
+          <firstname></firstname>
+          <familyname></familyname>
+          <address><![CDATA[ ]]></address>
+          <postalcode></postalcode>
+          <postaloffice></postaloffice>
+          <country></country>
+          <email></email>
+          <gsm></gsm>
+          <language></language>
+        </delivery>
+        <control type="default">
+          <return>${payment.redirect.return}</return>
+          <reject>${payment.redirect.reject}</reject>
+          <cancel>${payment.redirect.cancel}</cancel>
+          <delayed>${payment.redirect.delayed}</delayed>
+        </control>
+      </request>
+    </checkout>
+  `
 }
 
 /**
