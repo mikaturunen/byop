@@ -26,6 +26,7 @@ export interface PaymentItem {
   description: string
   categoryCode: string
   deliveryDate: string
+  vatPercentage: number
 }
 
 export interface PaymentControl {
