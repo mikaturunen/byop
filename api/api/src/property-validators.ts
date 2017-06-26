@@ -15,9 +15,6 @@ const isValidAmount = (payment: OpenPayment, key: string) => {
     const total = R.sum(
       R.pluck('amount')(payment.items)
     )
-    if (process.env['NODE_ENV'] === 'test') {
-      console.log('test result, total', total, 'and expected', payment[key])
-    }
 
     // Making sure the marked total for the basket is the same as the total from the item
     isValid = payment[key] === total
