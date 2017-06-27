@@ -179,6 +179,7 @@ export const createLegacyOpenPayment = (merchantId: string, merchantSecret: stri
       </request>
     </checkout>
   `
+  return createPaymentXml
 }
 
 /**
