@@ -26,3 +26,5 @@ describe('Legacy shop-in-shop payment wrapper', () => {
           done()
         })
     })
+  })
+})

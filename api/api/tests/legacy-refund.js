@@ -28,3 +28,5 @@ describe('Legacy payment refund wrapper', () => {
           done()
         })
     })
+  })
+})

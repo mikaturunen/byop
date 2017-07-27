@@ -28,3 +28,5 @@ describe('Legacy payment polling wrapper', () => {
           done()
         })
     })
+  })
+})

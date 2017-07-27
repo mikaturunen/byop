@@ -28,3 +28,5 @@ describe('Legacy token payment wrapper', () => {
           done()
         })
     })
+  })
+})
