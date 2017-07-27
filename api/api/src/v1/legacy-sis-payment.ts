@@ -126,13 +126,14 @@ export const createLegacyOpenPayment = (merchantId: string, merchantSecret: stri
 
   payment.items.forEach(item => {
     // TODO item level control element, name it to something that makes more sense.
+
     createPaymentXml = createPaymentXml + `
           <item>
-            <code>${item.code}</code>
+            <code>${item.categoryCode}</code>
             <stamp>${item.stamp}</stamp>
             <description>${item.description}</description>
             <price currency="${payment.currency}" vat="${item.vatPercentage}">${item.amount}</price>
-            <merchant>${item.merchantId}</merchant>
+            <merchant>${item.merchant.id}</merchant>
             <control></control>
             <reference>${item.reference}</reference>
           </item>

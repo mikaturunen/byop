@@ -23,6 +23,7 @@ export interface PaymentItem {
   reference: string
   stamp: string
   amount: string
+  merchant: Merchant
   description: string
   categoryCode: string
   deliveryDate: string
