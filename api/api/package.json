@@ -4,7 +4,17 @@
   "description": "Tasker project",
   "main": "build/app.js",
   "scripts": {
-    "start": "webpack --config webpack/webpack.js --watch"
+    "build": "concurrently \"npm run compile\" \"npm run copy-static\" ",
+    "compile": "tsc -p tsconfig.json",
+    "copy-static": "cpx --clean -v \"src/**/*.yaml\" build",
+
+    "dev": "concurrently \"npm run compile-dev\" \"npm run copy-static-dev\" \"npm run start-dev\" ",
+    "compile-dev": "tsc -p tsconfig.json --watch",
+    "copy-static-dev": "cpx --clean -v \"src/**/*.yaml\" build --watch",
+
+    "start": "node build/app.js",
+    "start-dev": "nodemon --ext '.yaml|.ts' -w build build/app.js",
+    "start1": "webpack --config webpack/webpack.js --watch"
   },
   "author": "Mika Turunen",
   "license": "MIT",
@@ -33,6 +43,8 @@
     "awesome-typescript-loader": "^3.1.3",
     "chai": "^4.0.2",
     "chai-http": "^3.0.0",
+    "concurrently": "^3.5.0",
+    "cpx": "^1.5.0",
     "mocha": "^3.4.2",
     "typescript": "^2.3.4",
     "typings": "^2.1.1",
