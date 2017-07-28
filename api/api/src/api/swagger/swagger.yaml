@@ -1,7 +1,17 @@
 swagger: "2.0"
+
 info:
   version: "0.0.1"
-  title: API
+  title: Ecommerce API
+  description: Simple API for making, refunding and tracking payments and their statuses for different commercial business needs.
+  contact:
+    name: API support
+    url: mikaturunen.eu
+    email: mika.turunen@ymail.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
 # during dev, should point to your local machine
 host: localhost:3002
 # basePath prefixes all resource paths
@@ -11,12 +21,13 @@ schemes:
   # tip: remove http to make production-grade
   - http
   - https
-# format of bodies a client can send (Content-Type)
+
 consumes:
   - application/json
-# format of the responses to the client (Accepts)
 produces:
   - application/json
+
+
 paths:
   /swagger:
     x-swagger-pipe: swagger_raw
@@ -32,9 +43,195 @@ paths:
           schema:
             $ref: "#/definitions/PingResponse"
 
+  /v1/payment/open/single:
+    x-swagger-router-controller: v1/payment
+    post:
+      description: Creates a single open payment. Response is a fully functional payment wall that can be iterated over and rendered to display all the necessary payment buttons.
+      operationId: openPayment
+      parameters:
+        - name: body
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/BodyOpenPayment"
+      responses:
+        "200":
+          description: Success
 
 # complex objects have schema definitions
 definitions:
+  BodyOpenPayment:
+    required:
+      - hmac
+      - payment
+    properties:
+      hmac:
+        type: string
+      payment:
+        $ref: "#/definitions/OpenPayment"
+
+  OpenPayment:
+    required:
+      - merchantId
+      - totalAmount
+      - currency
+      - reference
+      - stamp
+      - items
+      - content
+      - country
+      - language
+      - message
+      - delivery
+      - customer
+      - redirect
+    properties:
+      merchantId:
+        type: string
+      totalAmount:
+        type: integer
+        format: int32
+        minimum: 100
+      currency:
+        type: string
+      reference:
+        type: string
+      stamp:
+        type: string
+      items:
+        type: array
+        items:
+          $ref: "#/definitions/PaymentItem"
+      delivery:
+        $ref: "#/definitions/DeliveryAddress"
+      content:
+        type: string
+      country:
+        type: string
+      language:
+        type: string
+      message:
+        type: string
+      customer:
+        $ref: "#/definitions/MerchantCustomer"
+      redirect:
+        $ref: "#/definitions/RedirectControl"
+
+  RedirectControl:
+    required:
+      - return
+      - delayed
+      - cancel
+      - reject
+    properties:
+      return:
+        type: string
+      delayed:
+        type: string
+      cancel:
+        type: string
+      reject:
+        type: string
+
+  MerchantCustomer:
+    required:
+      - firstName
+      - lastName
+      - email
+    properties:
+      firstName:
+        type: string
+        minLength: 2
+        maxLength: 100
+      lastName:
+        type: string
+        minLength: 2
+        maxLength: 100
+      email:
+        type: string
+
+  PaymentItem:
+    required:
+      - reference
+      - stamp
+      - amount
+      - merchant
+      - description
+      - categoryCode
+      - deliveryDate
+      - vatPercentage
+    properties:
+      reference:
+        type: string
+      stamp:
+        type: string
+      amount:
+        type: integer
+        format: int32
+      merchant:
+        $ref: "#/definitions/Merchant"
+      description:
+        type: string
+        maxLength: 150
+        minLength: 0
+      categoryCode:
+        type: string
+        maxLength: 20
+        minLength: 1
+      deliveryDate:
+        type: string
+        maxLength: 10
+        minLength: 10
+      vatPercentage:
+        type: integer
+        format: int32
+        maximum: 100
+        minimum: 0
+
+  Merchant:
+    required:
+      - id
+      - name
+      - email
+      - vatId
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+        maxLength: 45
+      email:
+        type: string
+      vatId:
+        type: string
+
+  DeliveryAddress:
+    required:
+      - postalCode
+      - city
+      - country
+      - county
+      - streetAddress
+    properties:
+      postalCode:
+        type: string
+        maxLength: 10
+        minLength: 2
+      city:
+        type: string
+        maxLength: 20
+      country:
+        type: string
+        maxLength: 20
+        minLength: 2
+      county:
+        type: string
+        maxLength: 40
+      streetAddress:
+        type: string
+        maxLength: 100
+        minLength: 5
+
   PingResponse:
     required:
       - message
