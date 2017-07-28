@@ -28,6 +28,7 @@ export interface PaymentItem {
   categoryCode: string
   deliveryDate: string
   vatPercentage: number
+  delivery: DeliveryAddress
 }
 
 export interface PaymentControl {
@@ -46,18 +47,19 @@ export interface DeliveryAddress {
   city: string
   country: string
   streetAddress: string
+  county: string
 }
 
 export interface Merchant {
   id: string
   name: string
   email: string
-  address: DeliveryAddress
   vatId: string
 }
 
 // TODO lift interface into a shared location so that's its easy to take and use elsewhere too
 export interface OpenPayment {
+  merchantId: string
   totalAmount: number
   currency: string
   reference: string
@@ -69,7 +71,7 @@ export interface OpenPayment {
   message: string
   customer: MerchantCustomer
   redirect: RedirectControl
-  address: DeliveryAddress
+  delivery: DeliveryAddress
 }
 
 export interface PaymentButton {

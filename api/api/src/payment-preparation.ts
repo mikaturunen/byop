@@ -49,6 +49,7 @@ export const preparePayment = (merchantId: string, merchantSecret: string, clien
     log.info(`Payment hmac OK (mid: ${merchantId}, ref: ${payment.reference}, stamp: ${payment.stamp}, amount: ${payment.totalAmount})`)
 
     // 2. validate properties -- first check are we missing any properties
+    // TODO I think swaggers definitions already take care of this and we do not have to worry over this anymore - remove
     log.info(`Checking payment property validation (mid: ${merchantId}, ref: ${payment.reference}, stamp: ${payment.stamp}, amount: ${payment.totalAmount})`)
 
     const paymentInfo = validateProperties(payment)
