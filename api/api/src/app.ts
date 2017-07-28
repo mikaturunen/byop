@@ -33,7 +33,7 @@ app.disable('x-powered-by')
 
 // app.post('/api/v2/:merchantId/payment/open/single', v2SinglePaymentHandler)
 
-// TODO proper types once the SwaggerExpress has types
+// TODO proper types once the SwaggerExpress has types (above)
 swaggerMiddleware.create(config, (error: Error, swaggerExpress: any) => {
   if (error) {
     throw error
