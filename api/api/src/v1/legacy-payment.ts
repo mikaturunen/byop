@@ -167,9 +167,9 @@ export const createLegacyOpenPayment = (merchantId: string, merchantSecret: stri
     TYPE,
     FIRSTNAME: openPayment.customer.firstName,
     FAMILYNAME: openPayment.customer.lastName,
-    ADDRESS: openPayment.address.streetAddress,
-    POSTCODE: openPayment.address.postalCode,
-    POSTOFFICE: openPayment.address.city,
+    ADDRESS: openPayment.delivery.streetAddress,
+    POSTCODE: openPayment.delivery.postalCode,
+    POSTOFFICE: openPayment.delivery.city,
     EMAIL: openPayment.customer.email,
     DESCRIPTION: item.description,
     SECRET_KEY: merchantSecret
