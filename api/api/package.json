@@ -10,10 +10,10 @@
 
     "dev": "concurrently \"npm run compile-dev\" \"npm run copy-static-dev\" \"npm run start-dev\" ",
     "compile-dev": "tsc -p tsconfig.json --watch",
-    "copy-static-dev": "cpx --clean -v \"src/**/*.yaml\" build --watch",
+    "copy-static-dev": "cpx --clean -v \"src/**/*.{yaml,json}\" build --watch",
 
     "start": "node build/app.js",
-    "start-dev": "nodemon --ext '.yaml|.ts' -w build build/app.js",
+    "start-dev": "nodemon --ext '.yaml|.ts|.json' -w build build/app.js",
     "start1": "webpack --config webpack/webpack.js --watch"
   },
   "author": "Mika Turunen",
