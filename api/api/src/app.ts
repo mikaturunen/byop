@@ -12,6 +12,7 @@ import * as express from 'express'
 import * as bunyan from 'bunyan'
 import * as bodyParser from 'body-parser'
 
+
 const config = {
   appRoot: __dirname // required config
 };
@@ -21,6 +22,8 @@ const log = bunyan.createLogger({ name: 'api' })
 const app = express()
 
 app.use(bodyParser.json())
+
+//app.use(bodyParser.json())
 // - who tought this was a good idea? REALLY? If this is not disabled, we are opening additional attack windows.
 app.disable('x-powered-by')
 
