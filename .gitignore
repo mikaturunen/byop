@@ -58,3 +58,5 @@ typings/
 .env
 
 api/api/build
+
+.DS_Store
