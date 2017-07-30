@@ -11,6 +11,22 @@ export interface LegacyOpenPaymentSis {
 
 }
 
+const VERSION = '0002'
+const ALGORITHM = '3'
+const xml = '10'
+const DEVICE = xml
+const TYPE = '0'
+
+const bunyan = require('bunyan')
+const log = bunyan.createLogger({ name: 'api-v1-overlay-sis-payment' })
+
+const successCodes = [ 200 ]
+const checkoutError = [ 200 ]
+
+// TODO handle all the special cases that are actually considered errors even though they are HTTP 200 OK
+const checkoutEmptyPostError = 'Yhtään tietoa ei siirtynyt POST:lla checkoutille'
+
+
 // We make set of assumptions based on the knowledge of the wall behavior.
 type TransformResolver = (result: PaymentWall) => void
 type TransformRejector = (error: ClientError) => void
@@ -37,21 +53,6 @@ const transformLegacyXmlToPaymentWall = (xml: string) => new Promise((resolve: T
     }
   });
 })
-
-const VERSION = '0002'
-const ALGORITHM = '3'
-const xml = '10'
-const DEVICE = xml
-const TYPE = '0'
-
-const bunyan = require('bunyan')
-const log = bunyan.createLogger({ name: 'api-v1-overlay-sis-payment' })
-
-const successCodes = [ 200 ]
-const checkoutError = [ 200 ]
-
-// TODO handle all the special cases that are actually considered errors even though they are HTTP 200 OK
-const checkoutEmptyPostError = 'Yhtään tietoa ei siirtynyt POST:lla checkoutille'
 
 /**
  * Creates an open payment for shop-in-shop case.
