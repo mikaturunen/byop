@@ -130,7 +130,7 @@ const DEVICE = xml
 const TYPE = '0'
 
 const bunyan = require('bunyan')
-const log = bunyan.createLogger({ name: 'api-v1-overlay-payment' })
+const log = bunyan.createLogger({ name: 'v1-payment' })
 
 /**
  * Transforms a valid json formatted payment object into a legacy format object that allows us to open the legacy payment wall.
