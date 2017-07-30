@@ -6,7 +6,7 @@ info:
   description: Simple API for making, refunding and tracking payments and their statuses for different commercial business needs.
   contact:
     name: API support
-    url: mikaturunen.eu
+    url: http://mikaturunen.eu
     email: mika.turunen@ymail.com
   license:
     name: MIT
@@ -49,8 +49,8 @@ paths:
       description: Creates a single open payment. Response is a fully functional payment wall that can be iterated over and rendered to display all the necessary payment buttons.
       operationId: openPayment
       parameters:
-        - name: body
-          in: body
+        - in: body
+          name: OpenPayment
           required: true
           schema:
             $ref: "#/definitions/BodyOpenPayment"
@@ -61,18 +61,24 @@ paths:
 # complex objects have schema definitions
 definitions:
   BodyOpenPayment:
+    type: object
     required:
       - hmac
+      - merchantId
       - payment
     properties:
+      merchantId:
+        type: string
+        example: 375917
       hmac:
         type: string
+        minLength: 10
       payment:
+        type: object
         $ref: "#/definitions/OpenPayment"
 
   OpenPayment:
     required:
-      - merchantId
       - totalAmount
       - currency
       - reference
@@ -105,17 +111,59 @@ definitions:
       delivery:
         $ref: "#/definitions/DeliveryAddress"
       content:
-        type: string
+        type: number
       country:
         type: string
       language:
         type: string
       message:
         type: string
+        minLength: 0
       customer:
         $ref: "#/definitions/MerchantCustomer"
       redirect:
         $ref: "#/definitions/RedirectControl"
+    #example:
+    #  $ref: "../mocks/payment.json"
+
+  PaymentItem:
+    required:
+      - reference
+      - stamp
+      - amount
+      - merchant
+      - description
+      - categoryCode
+      - deliveryDate
+      - vatPercentage
+    properties:
+      reference:
+        type: string
+      stamp:
+        type: string
+      amount:
+        type: integer
+        format: int32
+      merchant:
+        type: object
+        $ref: "#/definitions/Merchant"
+      description:
+        type: string
+        maxLength: 150
+        minLength: 0
+      categoryCode:
+        type: string
+        maxLength: 20
+        minLength: 1
+      deliveryDate:
+        type: string
+        maxLength: 10
+        minLength: 8
+      vatPercentage:
+        type: integer
+        format: int32
+        maximum: 100
+        minimum: 0
 
   RedirectControl:
     required:
@@ -149,44 +197,6 @@ definitions:
         maxLength: 100
       email:
         type: string
-
-  PaymentItem:
-    required:
-      - reference
-      - stamp
-      - amount
-      - merchant
-      - description
-      - categoryCode
-      - deliveryDate
-      - vatPercentage
-    properties:
-      reference:
-        type: string
-      stamp:
-        type: string
-      amount:
-        type: integer
-        format: int32
-      merchant:
-        $ref: "#/definitions/Merchant"
-      description:
-        type: string
-        maxLength: 150
-        minLength: 0
-      categoryCode:
-        type: string
-        maxLength: 20
-        minLength: 1
-      deliveryDate:
-        type: string
-        maxLength: 10
-        minLength: 10
-      vatPercentage:
-        type: integer
-        format: int32
-        maximum: 100
-        minimum: 0
 
   Merchant:
     required:
