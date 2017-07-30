@@ -72,7 +72,7 @@ const properties = [
   { key: 'message', validator: isValidMessage },
   { key: 'customer', validator: isValidCustomer },
   { key: 'redirect', validator: isValidMock },
-  { key: 'address', validator: isValidMock }
+  { key: 'delivery', validator: isValidMock }
 ]
 
 /**

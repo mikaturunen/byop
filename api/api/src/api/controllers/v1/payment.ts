@@ -304,11 +304,14 @@ const SECRET = 'SAIPPUAKAUPPIAS'
  * @param {express.Response} response Express response
  */
 export const openPayment = (request: express.Request, response: express.Response) => {
-  const merchantId = request.params.merchantId
+  console.log('ENTRY')
   const openPayment: OpenPayment = request.body.payment
-  const clientHmac = request.body.hmac
+  const merchantId: string = request.body.merchantId
+  const clientHmac: string = request.body.hmac
   // TODO: read secret from db for merchant
   const merchantSecret = SECRET
+  console.log('ENTRY', request.body)
+
   log.info(`start /api/v1/overlay/${merchantId}/payment/open/single`)
 
   preparePayment(merchantId, merchantSecret, clientHmac, openPayment)

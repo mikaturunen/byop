@@ -50,9 +50,11 @@ export const preparePayment = (merchantId: string, merchantSecret: string, clien
 
     // 2. validate properties -- first check are we missing any properties
     // TODO I think swaggers definitions already take care of this and we do not have to worry over this anymore - remove
+
     log.info(`Checking payment property validation (mid: ${merchantId}, ref: ${payment.reference}, stamp: ${payment.stamp}, amount: ${payment.totalAmount})`)
 
     const paymentInfo = validateProperties(payment)
+  /*
     if (paymentInfo.missingProperties.length > 0) {
       log.warn(`Body validation for ${merchantId} failed. Missing the following properties from payment: ${paymentInfo.missingProperties}`)
       let error: ClientError = clientErrors.missingPaymentProperties
@@ -62,6 +64,7 @@ export const preparePayment = (merchantId: string, merchantSecret: string, clien
       reject(error)
       return
     }
+*/
 
     // 2. validate properties -- check are the properties valid
     if (paymentInfo.invalidProperties.length > 0) {
