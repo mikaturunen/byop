@@ -46,11 +46,26 @@ paths:
   /v1/payment/open/single:
     x-swagger-router-controller: v1/payment
     post:
-      description: Creates a single open payment. Response is a fully functional payment wall that can be iterated over and rendered to display all the necessary payment buttons.
+      description: Creates a single open payment. Response is a fully functional payment wall JSON. Iterate over the response and render the buttons and create valid HTML from it.
       operationId: openPayment
       parameters:
         - in: body
           name: OpenPayment
+          required: true
+          schema:
+            $ref: "#/definitions/BodyOpenPayment"
+      responses:
+        "200":
+          description: Success
+          
+  /v1/payment/open/shop-in-shop:
+    x-swagger-router-controller: v1/payment-shop-in-shop
+    post:
+      description: Creates a single open shop-in-shop payment. Response is a fully functional payment wall JSON. Iterate over the response and render the buttons and create valid HTML from it.
+      operationId: openPayment
+      parameters:
+        - in: body
+          name: OpenPaymentShopInShop
           required: true
           schema:
             $ref: "#/definitions/BodyOpenPayment"
