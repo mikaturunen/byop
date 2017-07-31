@@ -210,16 +210,6 @@ export const v1SpecificValidations = (payment: LegacyOpenPaymentSis) => new Prom
   }
 )
 
-/**
- * Calls the existing legacy Checkout API for shop-in-shop payment.
- *
- * @param {LegacyOpenPaymentSis} openPayment Payment to use when creating the payment wall
- * @returns {Object} XML from the payment wall
- */
-export const sendLegacyPayment = (openPayment: LegacyOpenPaymentSis) => {
-  return openPaymentWall(openPayment)
-}
-
 // TODO remove completel once we are done with tests, this is not required at all.
 const SECRET = 'SAIPPUAKAUPPIAS'
 
@@ -244,7 +234,7 @@ export const openPayment = (request: express.Request, response: express.Response
   preparePayment(merchantId, merchantSecret, clientHmac, openPayment)
     .then(paymentSet => createLegacyOpenPayment(paymentSet.merchantId, paymentSet.merchantSecret, paymentSet.payment))
     .then(payment => v1SpecificValidations(payment))
-    .then(payment => sendLegacyPayment(payment))
+    .then(payment => openPaymentWall(payment))
     .then(paymentWall => {
       response.json(paymentWall)
       log.info(`end openPayment for shop-in-shop, OK`)

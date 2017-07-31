@@ -3,26 +3,54 @@ const chaiHttp = require('chai-http')
 const server = require('../build/app')
 const should = chai.should()
 const crypto = require('crypto')
+const expect = chai.expect
 
 chai.use(chaiHttp)
 
 process.env.NODE_ENV = 'test'
+const api = '/v1/payment/open/shop-in-shop'
 
-describe('Legacy shop-in-shop payment wrapper', () => {
-  describe('POST /api/v1/overlay/:merchantId/payment/open/sis', _ => {
+describe('Legacy payment wrapper', () => {
+  describe('POST /v1/payment/open/shop-in-shop', _ => {
     it('with empty payment', done => {
       const payment = {
       }
 
       chai
         .request(server)
-        .post('/api/v1/overlay/375917/payment/open/sis')
+        .post(api)
         .send(payment)
         .end((error, response) => {
-          response.status.should.eql(502)
+          response.status.should.eql(400)
+          done()
+        })
+    })
+
+    it('with a valid payment', done => {
+      let body = require('../src/api/mocks/payment.json')
+
+      console.log('body to post')
+      console.log(JSON.stringify(body, null, 2))
+
+      body.hmac = crypto
+       .createHmac('sha256', 'SAIPPUAKAUPPIAS')
+       .update(new Buffer(JSON.stringify(body.payment)).toString('base64'))
+       .digest('hex')
+       .toUpperCase()
+
+      chai
+        .request(server)
+        .post(api)
+        .set('Accepts', 'application/json')
+        .send(body)
+        .end((error, response) => {
+          response.status.should.eql(200)
           response.body.should.be.a('object')
-          response.body.should.have.property('code').eql('xxxx')
-          response.body.should.have.property('message').eql('TODO: come up with generic error for worst case')
+
+          const payment = response.body
+          expect(payment).to.have.property('merchant')
+          expect(payment.merchant).to.have.property('id').to.equal('375917')
+
           done()
         })
     })
