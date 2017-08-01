@@ -16,7 +16,8 @@ const isValidAmount = (payment: OpenPayment, key: string) => {
       R.pluck('amount')(payment.items)
     )
 
-    // Making sure the marked total for the basket is the same as the total from the item
+    // Making sure the marked total for the basket is the same as the total from the item.
+    // We allow some items to be; for example, 0 - like shipping. But the total sum cannot be 0.
     isValid = payment[key] === total
   }
 
