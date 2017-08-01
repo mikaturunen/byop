@@ -10,7 +10,8 @@ import * as xml2js from 'xml2js'
 import * as R from 'ramda'
 
 export interface LegacyOpenPaymentSis {
-
+  'CHECKOUT_XML': string
+  'CHECKOUT_MAC': string
 }
 
 const VERSION = '0002'
@@ -24,6 +25,9 @@ const log = bunyan.createLogger({ name: 'v1-payment-shop-in-shop' })
 
 const successCodes = [ 200 ]
 const checkoutError = [ 200 ]
+
+// TODO handle this case as a fairly generic error after you've internally built structure to stop this from occurring in normal cases
+// <p>Maksutapahtuman luonti ei onnistunut (-1).</p><p>Error in field/Virhekentässä: VERSION</p><p><a href=''>Palaa takaisin verkkokauppaan</a></p>
 
 // TODO handle all the special cases that are actually considered errors even though they are HTTP 200 OK
 const checkoutEmptyPostError = 'Yhtään tietoa ei siirtynyt POST:lla checkoutille'
@@ -78,6 +82,7 @@ const openPaymentWall = (payload: LegacyOpenPaymentSis, headers?: {[key: string]
       // First make sure we have handled the http error codes
       if (successCodes.indexOf(result.code) === -1) {
         // ERROR
+        log.error(`HTTP 1/1 error from parsing the reply ${result.code}.`)
         let clientError = serverErrors.legacy.error
         clientError.rawError = result.body
         reject(clientError)
@@ -103,12 +108,12 @@ const openPaymentWall = (payload: LegacyOpenPaymentSis, headers?: {[key: string]
  * @param {string} merchantId ID of the Merchant, also known as 'mid'
  * @param {string} merchantSecret Shared secret for specific merchant.
  * @param {OpenPayment} payment The specific payment object.
- * @returns {string} The XML string that needs to be sent to the legacy SiS payment wall
+ * @returns {LegacyOpenPaymentSis} Legacy payment sis object
  */
-export const createLegacyOpenPayment = (merchantId: string, merchantSecret: string, payment: OpenPayment): string => {
+export const createLegacyOpenPayment = (merchantId: string, merchantSecret: string, payment: OpenPayment): LegacyOpenPaymentSis => {
   // TODO Clean up this string crap into a simple xml lib as soon as it's tested to work properly
 
-  let createPaymentXml = `
+  let rawXml = `
     <?xml version="1.0"?>
     <checkout xmlns="http://checkout.fi/request">
       <request type="aggregator" test="false">
@@ -130,7 +135,7 @@ export const createLegacyOpenPayment = (merchantId: string, merchantSecret: stri
   payment.items.forEach(item => {
     // TODO item level control element, name it to something that makes more sense.
 
-    createPaymentXml = createPaymentXml + `
+    rawXml = rawXml + `
           <item>
             <code>${item.categoryCode}</code>
             <stamp>${item.stamp}</stamp>
@@ -143,36 +148,37 @@ export const createLegacyOpenPayment = (merchantId: string, merchantSecret: stri
           `
   })
 
-  createPaymentXml = createPaymentXml + `
+  rawXml = rawXml + `
           <amount currency="${payment.currency}">${payment.totalAmount}</amount>
           `
 
-  createPaymentXml = createPaymentXml + `
+  // TODO fix delivery.date element from payment.items[0].deliveryDate to be payment.delivery.date as the legacy api requires this.
+  rawXml = rawXml + `
         </items>
         <buyer>
           <company vatid=""></company>
-          <firstname></firstname>
-          <familyname></familyname>
+          <firstname>${payment.customer.firstName}</firstname>
+          <familyname>${payment.customer.lastName}</familyname>
           <address><![CDATA[ ]]></address>
           <postalcode></postalcode>
           <postaloffice></postaloffice>
-          <country></country>
-          <email></email>
+          <country>${payment.country}</country>
+          <email>${payment.customer.email}</email>
           <gsm></gsm>
-          <language></language>
+          <language>${payment.language}</language>
         </buyer>
         <delivery>
-          <date></date>
+          <date>${payment.items[0].deliveryDate}</date>
           <company vatid=""></company>
-          <firstname></firstname>
-          <familyname></familyname>
+          <firstname>${payment.customer.firstName}</firstname>
+          <familyname>${payment.customer.lastName}</familyname>
           <address><![CDATA[ ]]></address>
           <postalcode></postalcode>
           <postaloffice></postaloffice>
-          <country></country>
-          <email></email>
+          <country>${payment.country}</country>
+          <email>${payment.customer.email}</email>
           <gsm></gsm>
-          <language></language>
+          <language>${payment.language}</language>
         </delivery>
         <control type="default">
           <return>${payment.redirect.return}</return>
@@ -183,7 +189,108 @@ export const createLegacyOpenPayment = (merchantId: string, merchantSecret: stri
       </request>
     </checkout>
   `
-  return createPaymentXml
+
+  rawXml = `<?xml version='1.0'?>
+<checkout xmlns='http://checkout.fi/request'>
+    <request type='aggregator' test='false'>
+        <aggregator>375917</aggregator>
+        <version>0002</version>
+        <stamp>1501589373178</stamp>
+        <reference>1501589373178</reference>
+        <description>Test</description>
+        <device>10</device>
+        <content>1</content>
+        <type>0</type>
+        <algorithm>3</algorithm>
+        <currency>EUR</currency>
+        <commit>false</commit>
+        <items>
+            <item>
+                <code>2859</code>
+                <stamp>1501589373179</stamp>
+                <description>Description 1</description>
+                <price currency='EUR' vat='24'>182</price>
+                <merchant>391830</merchant>
+                <reference>1501589373179</reference>
+            </item>
+            <item>
+                <code>321</code>
+                <stamp>1501589373180</stamp>
+                <description>Description 2</description>
+                <price currency='EUR' vat='24'>132</price>
+                <merchant>391830</merchant>
+                <reference>1501589373180</reference>
+            </item>
+            <item>
+                <code>1084188</code>
+                <stamp>1501589373181</stamp>
+                <description>Description 3</description>
+                <price currency='EUR' vat='24'>253</price>
+                <merchant>391830</merchant>
+                <reference>1501589373181</reference>
+            </item>
+            <amount currency='EUR'>567</amount>
+        </items>
+        <buyer vatid=''>
+            <country>FIN</country>
+            <language>FI</language>
+            <firstname> </firstname>
+            <familyname> </familyname>
+            <address> </address>
+            <postalcode> </postalcode>
+            <postaloffice> </postaloffice>
+            <email> </email>
+            <gsm> </gsm>
+        </buyer>
+        <delivery>
+            <company vatid=''></company>
+            <firstname> </firstname>
+            <familyname> </familyname>
+            <address> </address>
+            <postalcode> </postalcode>
+            <postaloffice> </postaloffice>
+            <country> </country>
+            <email> </email>
+            <gsm> </gsm>
+            <language> </language>
+            <date>20170616</date>
+        </delivery>
+        <control type='default'>
+            <return>http://google.com</return>
+            <reject>http://google.com</reject>
+            <cancel>http://google.com</cancel>
+        </control>
+    </request>
+</checkout>`
+
+  // TODO mask all person specific information from the log files with per property:
+  // foo.substring(0, 2) + foo.substring(2, foo.length-2).replace(/\S/gi, '*') + foo.substring(foo.length-2, foo.length)
+  // other option is to just drop out the elements from the log file that we do not want but this might make the problem solving effort more difficult later on in production for customer service
+  log.info(`Sending out the following raw XML: \n${rawXml}`)
+
+  const xml = new Buffer(
+      rawXml
+    )
+    .toString('base64')
+
+  log.info(`Base64 of that XML: \n${xml}`)
+
+  const query = [
+    xml,
+    merchantSecret
+  ]
+  .join('+')
+
+  // NOTE unfortunately the legacy API uses MD5 in these cases but we hide it behind our own hashing algorithm
+  const hmac = crypto.createHash('md5')
+    .update(query)
+    .digest('hex')
+    .toUpperCase()
+
+  return {
+    'CHECKOUT_XML': xml,
+    'CHECKOUT_MAC': hmac
+  }
 }
 
 /**
@@ -222,13 +329,13 @@ const SECRET = 'SAIPPUAKAUPPIAS'
  */
 export const openPayment = (request: express.Request, response: express.Response) => {
   log.info(`start openPayment for shop-in-shop`)
-    
+
   const openPayment: OpenPayment = request.body.payment
   const merchantId: string = request.body.merchantId
   const clientHmac: string = request.body.hmac
   // TODO: read secret from db for merchant
   const merchantSecret = SECRET
-  
+
   log.info(`start openPayment for shop-in-shop, merchant ${merchantId}`)
 
   preparePayment(merchantId, merchantSecret, clientHmac, openPayment)
