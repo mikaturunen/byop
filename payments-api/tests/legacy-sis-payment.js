@@ -12,6 +12,7 @@ const api = '/v1/payment/open/shop-in-shop'
 
 describe('Legacy payment wrapper', () => {
   describe('POST /v1/payment/open/shop-in-shop', _ => {
+    /**
     it('with empty payment', done => {
       const payment = {
       }
@@ -25,9 +26,12 @@ describe('Legacy payment wrapper', () => {
           done()
         })
     })
+    **/
 
-    it('with a valid payment', done => {
-      let body = require('../src/api/mocks/payment.json')
+    // NOTE using the function keyword instead of the fat-arrow notation to allow this.timeout usage
+    it('with a valid payment', function(done) {
+      this.timeout(5000)
+      let body = require('../src/api/mocks/payment-shop-in-shop.json')
 
       console.log('body to post')
       console.log(JSON.stringify(body, null, 2))
