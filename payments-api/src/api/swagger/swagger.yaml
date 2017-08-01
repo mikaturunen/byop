@@ -57,7 +57,7 @@ paths:
       responses:
         "200":
           description: Success
-          
+
   /v1/payment/open/shop-in-shop:
     x-swagger-router-controller: v1/payment-shop-in-shop
     post:
@@ -122,6 +122,7 @@ definitions:
       items:
         type: array
         items:
+          minItems: 1
           $ref: "#/definitions/PaymentItem"
       delivery:
         $ref: "#/definitions/DeliveryAddress"
