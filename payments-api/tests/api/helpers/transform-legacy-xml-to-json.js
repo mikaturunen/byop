@@ -86,6 +86,7 @@ describe('Helper transforms the Checkout XML into valid JSON', () => {
             'id', 'company', 'vatId', 'name', 'email', 'phone'
           ]
           .forEach(key => assert.equal(result.merchant[key], expected.merchant[key]))
+
           done()
         })
         .catch(error => done(error))
