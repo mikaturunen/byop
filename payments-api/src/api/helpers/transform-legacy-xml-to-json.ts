@@ -7,6 +7,21 @@ import * as R from 'ramda'
 const log = bunyan.createLogger({ name: 'transformLegacyXmlToPaymentWall' })
 
 /**
+ * Converts the bank buttons from the legacy XML into a sensible JSON payment wall PaymentButtons that we can handle.
+ * NOTE: the effort to type 'resultXmlToJson' is not reasonable vs what it gives us. It's JSON full of arrays converted from XML.
+ *
+ * @param {any} payments JSONified XLM elemens from Checkout API
+ * @returns {Array[PaymentButton]} Returns valid JSON object
+ */
+const convertBankButtonsIntoPaymentButtons = (banks: any) => {
+  const buttonCollection = R.head(banks.banks || [])
+  // After we dug out the buttons, we have to manu
+  console.log(buttonCollection)
+
+  return buttonCollection
+}
+
+/**
  * Transforms the legacy XML response into a proper PaymentWall object.
  *
  * @param {string} xml Full XML result sent by the legacy API.
@@ -31,10 +46,16 @@ const transformLegacyXmlToPaymentWall = (xml: string) => new Promise(
       log.info('XML parsing complete')
       // parse all the properties from the XML with quite a bit of assumptions on the behavior
       const merchant = R.head(result.trade.merchant || [{}])
-      const payments = R.head(result.trade.payments || [{}])
-
-      console.log(merchant)
-      console.log(payments)
+      // Due to the fact that the xml lib packs everything into arrays we'll have to perform a bit of trickery to REALLY get the payment
+      // buttons out of hiding
+      const payments = R.head(result.trade.payments || [])
+      // Checkout calls all payment methods banks so we are going to use the same variable
+      // naming and throw them out when we are done and name them in a more reasonable manner
+      const banks = R.head(payments.payment || [])
+      const amount = R.head(banks.amount)
+      const stamp = R.head(banks.stamp)
+      const id = R.head(banks.id)
+      const buttons = convertBankButtonsIntoPaymentButtons(banks)
 
       // We just abuse Ramda for now to strip the arrays into a simple objects.
       const wall: PaymentWall = {
@@ -42,6 +63,7 @@ const transformLegacyXmlToPaymentWall = (xml: string) => new Promise(
           id: R.head(result.trade.id || ['']),
           description: R.head(result.trade.description || ['']),
           status: R.head(result.trade.status || ['']),
+          // TODO insert button.{amount,id,stamp} here? I think we already have the same stamp. Check legacy response and move if possible.
           stamp: R.head(result.trade.stamp || ['']),
           // TODO sort better default than just stupidly puking 0001
           version: R.head(result.trade.version || ['0001']),
@@ -83,10 +105,14 @@ const transformLegacyXmlToPaymentWall = (xml: string) => new Promise(
           email: R.head(merchant.email || ['']),
           phone: R.head(merchant.helpdeskNumber || ['']),
         },
-        buttons: []
+        buttons: {
+          amount,
+          id,
+          stamp,
+          list: buttons
+        }
       }
 
-      console.log(JSON.stringify(wall, null, 2))
       resolve(wall)
     }
   });
