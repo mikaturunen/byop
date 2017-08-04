@@ -1,13 +1,23 @@
-export interface PaymentButton {
-  name: string
-  group: string
 
-  html: {
-    buttons: Array<HtmlPaymentButtonForm>
+// TODO after few test runs with the json schema, start using this https://mozilla-services.github.io/react-jsonschema-form/ - separate into Uischema and data schema
+
+// TODO this type heavily depends on the XML format and validation we are performing, make sure it's typed as strictly as possible as we learn more of the XML
+export interface PaymentWall {
+  // TODO after first round of figuring out the XML to JSON, type PaymentWall.payment and try to match it with the existing OpenPayment format or extract shared type from it that both can then use - the probable case
+  payment: any
+  // TODO after first round of figuring out the XML to JSON, type PaymentWall.merchant and try to match it with the existing Merchant format or extract shared type from it that both can then use - the probable case
+  merchant: any
+  buttons: {
+    stamp: string
+    id: string
+    amount: string
+
+    /**
+     * Actual list of UI elements to render with their content and details
+     */
+    list: Array<HtmlPaymentButtonForm>
   }
 }
-
-// TODO after few test runs with the json schema, start using this https://mozilla-services.github.io/react-jsonschema-form/
 
 /**
  * Generalized structure for a single render capable payment button.
@@ -36,6 +46,8 @@ export interface PaymentButton {
 export interface HtmlPaymentButtonForm {
   // Render me as a form
   htmlElement: 'form'
+  name: string
+  group: 'mobile'|'card'|'loaner'|'bank'|'other'
 
   /**
    * Properties of this form
@@ -56,18 +68,18 @@ export interface HtmlSpanButton {
   // render me as a span
   htmlElement: 'span'
 
-  children: Array<HtmlInputImage|HtmlInputHidden>
+  children: Array<HtmlInputImage>
 }
 
-export interface HtmlButton {
+export interface HtmlInput {
   type: 'hidden'|'image'
 }
 
-export interface HtmlInputImage extends HtmlButton {
+export interface HtmlInputImage extends HtmlInput {
   src: string
 }
 
-export interface HtmlInputHidden extends HtmlButton {
+export interface HtmlInputHidden extends HtmlInput {
   name: string
   value: any
 }

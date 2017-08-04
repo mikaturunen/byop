@@ -87,6 +87,10 @@ describe('Helper transforms the Checkout XML into valid JSON', () => {
           ]
           .forEach(key => assert.equal(result.merchant[key], expected.merchant[key]))
 
+          assert.equal(result.buttons.list.map(form => form.name).indexOf('MobilePay'), 0)
+
+          // TODO once we are confident in the JSON format, write additional tests for the json UiSchema
+
           done()
         })
         .catch(error => done(error))

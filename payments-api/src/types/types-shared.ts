@@ -74,18 +74,3 @@ export interface Merchant {
   email: string
   vatId: string
 }
-
-// TODO this type heavily depends on the XML format and validation we are performing, make sure it's typed as strictly as possible as we learn more of the XML
-export interface PaymentWall {
-  // TODO after first round of figuring out the XML to JSON, type these
-  payment: any
-  merchant: any
-  buttons: {
-    stamp: any
-    id: any
-    amount: any
-
-    list: Array<any>
-  }
-}
-
