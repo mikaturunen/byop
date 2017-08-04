@@ -1,3 +1,5 @@
+// Types that are yet to find their real home :)
+
 export interface ClientError {
   http: number
   code: string
@@ -87,27 +89,3 @@ export interface PaymentWall {
   }
 }
 
-export interface PaymentButton {
-  iconUrl: string
-  name: string
-  group: string
-
-  html: {
-    form: ButtonHtmlForm
-  }
-}
-
-export interface ButtonHtmlForm {
-  properties: {
-    action: string
-    method: string
-  }
-
-  inputs: Array<ButtonHtmlInput>
-}
-
-export interface ButtonHtmlInput {
-  type: 'hidden'
-  name: string
-  value: any
-}
