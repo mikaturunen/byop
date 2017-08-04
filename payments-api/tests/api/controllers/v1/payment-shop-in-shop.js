@@ -1,6 +1,6 @@
 const chai = require('chai')
 const chaiHttp = require('chai-http')
-const server = require('../build/app')
+const server = require('../../../../build/app')
 const should = chai.should()
 const crypto = require('crypto')
 const expect = chai.expect
@@ -31,7 +31,7 @@ describe('Legacy payment wrapper', () => {
     // NOTE using the function keyword instead of the fat-arrow notation to allow this.timeout usage
     it('with a valid payment', function(done) {
       this.timeout(5000)
-      let body = require('../src/api/mocks/payment-shop-in-shop.json')
+      let body = require('../../../../src/api/mocks/payment-shop-in-shop.json')
 
       console.log('body to post')
       console.log(JSON.stringify(body, null, 2))

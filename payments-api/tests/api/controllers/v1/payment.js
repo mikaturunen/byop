@@ -1,6 +1,6 @@
 const chai = require('chai')
 const chaiHttp = require('chai-http')
-const server = require('../build/app')
+const server = require('../../../../build/app')
 const should = chai.should()
 const crypto = require('crypto')
 const expect = chai.expect
@@ -26,7 +26,7 @@ describe('Legacy payment wrapper', () => {
     })
 
     it('with a valid payment', done => {
-      let body = require('../src/api/mocks/payment.json')
+      let body = require('../../../../src/api/mocks/payment.json')
 
       console.log('body to post')
       console.log(JSON.stringify(body, null,2 ))
@@ -49,6 +49,7 @@ describe('Legacy payment wrapper', () => {
           const payment = response.body
           expect(payment).to.have.property('merchant')
           expect(payment.merchant).to.have.property('id').to.equal('375917')
+          expect(payment.buttons.list.length).to.have.above(3)
 
           done()
         })

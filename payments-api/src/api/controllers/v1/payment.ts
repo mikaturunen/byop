@@ -3,6 +3,7 @@ import { OpenPayment, ClientError, PaymentWall } from '../../../types'
 import { clientErrors, serverErrors } from '../../helpers/errors'
 import { preparePayment } from '../../helpers/payment-preparation'
 import transformXmlToJson from '../../helpers/transform-legacy-xml-to-json'
+import transformLegacyXmlToJson from '../../helpers/transform-legacy-xml-to-json'
 
 import * as express from 'express'
 import * as crypto from 'crypto'
@@ -122,7 +123,7 @@ const checkoutEmptyPostError = 'Yhtään tietoa ei siirtynyt POST:lla checkoutil
  * @param {Object} headers Complete unirest headers. Defaults to empty headers.
  * @returns {Promise} Resolves to payment wall and rejects on HTTP error or HTTP 200 OK when it's CoF specific error.
  */
-const openPaymentWall = (payload: LegacyOpenPayment, headers?: {[key: string]: string}) => {
+const openPaymentWall = (payload: LegacyOpenPayment, headers?: {[key: string]: string}): Promise<string>  => {
   headers = headers ? headers : {}
 
   log.info(`Opening payment wall.`)
@@ -153,7 +154,6 @@ const openPaymentWall = (payload: LegacyOpenPayment, headers?: {[key: string]: s
         resolve(result.body)
       }
     }))
-    .then((xml: string) => transformXmlToJson(xml))
 }
 
 /**
@@ -225,8 +225,8 @@ export const openPayment = (request: express.Request, response: express.Response
     .then(paymentSet => createLegacyOpenPayment(paymentSet.merchantId, paymentSet.merchantSecret, paymentSet.payment))
     .then(payment => v1SpecificValidations(payment))
     .then(payment => openPaymentWall(payment))
-    .then((result: any) => {
-      log.info(`Result from legacy payment wall`, result)
+    .then(paymentWallXml => transformLegacyXmlToJson(paymentWallXml))
+    .then(result => {
       response.json(result)
       log.info(`end openPayment for merchant ${merchantId}`)
     })
