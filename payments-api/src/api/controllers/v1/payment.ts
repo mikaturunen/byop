@@ -1,7 +1,7 @@
 
-import { OpenPayment, ClientError, PaymentWall } from '../../../shared-types'
-import { clientErrors, serverErrors } from '../../../errors'
-import { preparePayment } from '../../../payment-preparation'
+import { OpenPayment, ClientError, PaymentWall } from '../../../types'
+import { clientErrors, serverErrors } from '../../helpers/errors'
+import { preparePayment } from '../../helpers/payment-preparation'
 import transformXmlToJson from '../../helpers/transform-legacy-xml-to-json'
 
 import * as express from 'express'

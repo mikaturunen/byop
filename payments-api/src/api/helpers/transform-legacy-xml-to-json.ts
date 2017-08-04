@@ -1,6 +1,6 @@
 import * as xml2js from 'xml2js'
-import { OpenPayment, ClientError, PaymentWall } from '../../shared-types'
-import { clientErrors, serverErrors } from '../../errors'
+import { OpenPayment, ClientError, PaymentWall } from '../../types'
+import { clientErrors, serverErrors } from './errors'
 import * as bunyan from 'bunyan'
 import * as R from 'ramda'
 
