@@ -200,16 +200,6 @@ const toValueString = (payment: LegacyOpenPayment) => {
   return valueString
 }
 
-/**
- * Calls the existing legacy Checkout API.
- *
- * @param {LegacyOpenPayment} openPayment Payment to use when creating the payment wall
- * @returns {Object} XML from the payment wall
- */
-export const sendLegacyPayment = (openPayment: LegacyOpenPayment) => {
-  return openPaymentWall(openPayment)
-}
-
 // TODO remove completely once we are done with tests, this is not required at all.
 const SECRET = 'SAIPPUAKAUPPIAS'
 
@@ -221,32 +211,32 @@ const SECRET = 'SAIPPUAKAUPPIAS'
  * @param {express.Response} response Express response
  */
 export const openPayment = (request: express.Request, response: express.Response) => {
-  console.log('ENTRY')
+  log.info(`start openPayment.. finding merchant`)
+
   const openPayment: OpenPayment = request.body.payment
   const merchantId: string = request.body.merchantId
   const clientHmac: string = request.body.hmac
   // TODO: read secret from db for merchant
   const merchantSecret = SECRET
-  console.log('ENTRY', request.body)
 
-  log.info(`start /api/v1/overlay/${merchantId}/payment/open/single`)
+  log.info(`Found merchant for openPayment: ${merchantId}`)
 
   preparePayment(merchantId, merchantSecret, clientHmac, openPayment)
     .then(paymentSet => createLegacyOpenPayment(paymentSet.merchantId, paymentSet.merchantSecret, paymentSet.payment))
     .then(payment => v1SpecificValidations(payment))
-    .then(payment => sendLegacyPayment(payment))
+    .then(payment => openPaymentWall(payment))
     .then((result: any) => {
       log.info(`Result from legacy payment wall`, result)
       response.json(result)
-      log.info(`end /api/v1/overlay/${merchantId}/payment/open/single, OK`)
+      log.info(`end openPayment for merchant ${merchantId}`)
     })
     .catch((error: ClientError) => {
       if (!error.http || !error.code) {
-        log.error(`Unhandled error: `, error)
+        log.error(`Unhandled error in openPayment: `, error)
         // TODO list this error into an alarm list that the developers will follow and fix as these emerge
         response.status(502).json(serverErrors.general)
       } else {
-        log.error(`Error: `, error)
+        log.error(`Error in openPayment: `, error)
         response.status(error.http).json(error)
       }
     })

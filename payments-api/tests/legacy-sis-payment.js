@@ -54,6 +54,7 @@ describe('Legacy payment wrapper', () => {
           const payment = response.body
           expect(payment).to.have.property('merchant')
           expect(payment.merchant).to.have.property('id').to.equal('375917')
+          expect(payment.buttons.list.length).to.have.above(3)
 
           done()
         })

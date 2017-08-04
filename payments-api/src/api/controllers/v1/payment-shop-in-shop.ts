@@ -2,6 +2,7 @@
 import { OpenPayment, ClientError, PaymentWall } from '../../../types'
 import { clientErrors, serverErrors } from '../../helpers/errors'
 import { preparePayment } from '../../helpers/payment-preparation'
+import transformLegacyXmlToJson from '../../helpers/transform-legacy-xml-to-json'
 
 import * as express from 'express'
 import * as crypto from 'crypto'
@@ -32,34 +33,6 @@ const checkoutError = [ 200 ]
 // TODO handle all the special cases that are actually considered errors even though they are HTTP 200 OK
 const checkoutEmptyPostError = 'Yhtään tietoa ei siirtynyt POST:lla checkoutille'
 
-
-// We make set of assumptions based on the knowledge of the wall behavior.
-type TransformResolver = (result: PaymentWall) => void
-type TransformRejector = (error: ClientError) => void
-
-/**
- * Transforms the legacy XML response into a proper PaymentWall object.
- *
- * @param {string} xml Full XML result sent by the legacy API.
- * @returns {Promise} Resolves into PaymentWall object and in case of error, rejects into ClientError object.
- */
-const transformLegacyXmlToPaymentWall = (xml: string) => new Promise((resolve: TransformResolver, reject: TransformRejector) => {
-  log.info('Starting to parse XML')
-  // NOTE: we are not going to type the result object at this point as it's messy XML.
-  xml2js.parseString(xml, (error: string, result: any) => {
-    if (error) {
-      let clientError = serverErrors.legacy.error
-      clientError.rawError = error
-
-      log.error('Error in parsing the v1 payment wall XML:', clientError.rawError)
-      reject(clientError)
-    } else {
-      // TODO parsing of raw json into a properly formatted PaymentWall object
-      // resolve(null)
-    }
-  });
-})
-
 /**
  * Creates an open payment for shop-in-shop case.
  *
@@ -67,7 +40,7 @@ const transformLegacyXmlToPaymentWall = (xml: string) => new Promise((resolve: T
  * @param {Object} headers Complete unirest headers. Defaults to empty headers.
  * @returns {Promise} Resolves to payment wall and rejects on HTTP error or HTTP 200 OK when it's CoF specific error.
  */
-const openPaymentWall = (payload: LegacyOpenPaymentSis, headers?: {[key: string]: string}) => {
+const openPaymentWall = (payload: LegacyOpenPaymentSis, headers?: {[key: string]: string}): Promise<string> => {
   headers = headers ? headers : {}
 
   log.info(`Opening sis payment wall.`)
@@ -99,7 +72,6 @@ const openPaymentWall = (payload: LegacyOpenPaymentSis, headers?: {[key: string]
         resolve(result.body)
       }
     }))
-    .then((xml: string) => transformLegacyXmlToPaymentWall(xml))
 }
 
 /**
@@ -328,7 +300,7 @@ const SECRET = 'SAIPPUAKAUPPIAS'
  * @param {express.Response} response Express response
  */
 export const openPayment = (request: express.Request, response: express.Response) => {
-  log.info(`start openPayment for shop-in-shop`)
+  log.info(`start openPayment for shop-in-shop.. finding merchant`)
 
   const openPayment: OpenPayment = request.body.payment
   const merchantId: string = request.body.merchantId
@@ -336,12 +308,13 @@ export const openPayment = (request: express.Request, response: express.Response
   // TODO: read secret from db for merchant
   const merchantSecret = SECRET
 
-  log.info(`start openPayment for shop-in-shop, merchant ${merchantId}`)
+  log.info(`Found merchant for shop-in-shop openPayment, merchant ${merchantId}`)
 
   preparePayment(merchantId, merchantSecret, clientHmac, openPayment)
     .then(paymentSet => createLegacyOpenPayment(paymentSet.merchantId, paymentSet.merchantSecret, paymentSet.payment))
     .then(payment => v1SpecificValidations(payment))
     .then(payment => openPaymentWall(payment))
+    .then(paymentWallXml => transformLegacyXmlToJson(paymentWallXml))
     .then(paymentWall => {
       response.json(paymentWall)
       log.info(`end openPayment for shop-in-shop, OK`)
