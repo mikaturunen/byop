@@ -1,4 +1,4 @@
-import { OpenPayment, PaymentItem, MerchantCustomer } from '../../types'
+import { OpenPayment, PaymentItem, MerchantCustomer } from '../../../../types'
 import * as R from 'ramda'
 
 

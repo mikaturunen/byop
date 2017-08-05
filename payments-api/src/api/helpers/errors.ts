@@ -1,4 +1,4 @@
-import { ClientError } from '../../types'
+import { ClientError } from '../../../../types'
 
 // using some constants to get some standard groove into the api
 const paymentId = '1'
