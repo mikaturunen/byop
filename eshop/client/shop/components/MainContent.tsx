@@ -1,5 +1,5 @@
 import * as React from 'react'
-
+import Payment from './payments/Payments'
 
 export interface MainContentProperties {
 }
@@ -21,6 +21,7 @@ class MainContent extends React.Component<MainContentProperties, MainContentStat
       <div>
         <section className="main">
           <button>Show payments</button>
+          <Payment />
         </section>
       </div>
     )
