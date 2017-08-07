@@ -73,6 +73,21 @@ paths:
         "200":
           description: Success
 
+  /v1/payment/refund:
+    x-swagger-router-controller: v1/refund
+    post:
+      description: Refunds a given item from a payment. Can also refund the whole payment.
+      operationId: refundPayment
+      parameters:
+        - in: body
+          name: RefundPayment
+          required: true
+          schema:
+            $ref: "#/definitions/BodyRefundPayment"
+      responses:
+        "200":
+          description: Success
+
 # complex objects have schema definitions
 definitions:
   BodyOpenPayment:
@@ -91,6 +106,47 @@ definitions:
       payment:
         type: object
         $ref: "#/definitions/OpenPayment"
+
+  BodyRefundPayment:
+    type: object
+    required:
+      - merchantId
+      - stamp
+      - payment
+      - hmac
+    properties:
+      merchantId:
+        type: string
+        example: 375917
+      stamp:
+        type: string
+        example: '1233214'
+      hmac:
+        type: string
+        minLength: 10
+      payment:
+        type: object
+        required:
+          - stamp
+          - reference
+          - amount
+          - receiver
+        properties:
+          stamp:
+            type: string
+          reference:
+            type: string
+          amount:
+            type: integer
+            format: int32
+            minimum: 100
+          receiver:
+            type: object
+            required:
+              - email
+            properties:
+              email:
+                type: string
 
   OpenPayment:
     required:

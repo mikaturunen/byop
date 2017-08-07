@@ -7,7 +7,7 @@ import {
   HtmlInput,
   HtmlInputHidden,
   HtmlInputImage
-} from '../../../../types'
+} from '../../types'
 import { clientErrors, serverErrors } from './errors'
 import * as util from 'util'
 import * as bunyan from 'bunyan'

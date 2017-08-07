@@ -1,5 +1,5 @@
 
-import { OpenPayment, ClientError, PaymentWall } from '../../../../../types'
+import { OpenPayment, ClientError, PaymentWall } from '../../../types'
 import { clientErrors, serverErrors } from '../../helpers/errors'
 import { preparePayment } from '../../helpers/payment-preparation'
 import transformLegacyXmlToJson from '../../helpers/transform-legacy-xml-to-json'

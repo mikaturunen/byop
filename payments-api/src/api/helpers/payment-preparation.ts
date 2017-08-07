@@ -1,7 +1,7 @@
 import * as bunyan from 'bunyan'
 import * as crypto from 'crypto'
 
-import { OpenPayment, PaymentSet, ClientError } from '../../../../types'
+import { OpenPayment, PaymentSet, ClientError } from '../../types'
 import { clientErrors, serverErrors } from './errors'
 import { validateProperties } from './property-validators'
 
