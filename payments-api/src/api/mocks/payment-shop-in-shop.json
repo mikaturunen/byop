@@ -1,6 +1,6 @@
 {
   "merchantId": "375917",
-  "hmac": "1ADF235BB9C953F3BB70BF95DB62D39B15667658D0B23FC9CEAA5949D6480D0D",
+  "hmac": "calculate me, thanks - tests do it, if you need example",
   "payment": {
     "totalAmount": 1000,
     "reference": "string",
