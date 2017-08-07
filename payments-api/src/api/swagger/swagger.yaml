@@ -181,31 +181,36 @@ definitions:
   BodyPollPayment:
     type: object
     required:
-      - stamp
-      - reference
       - merchantId
-      - amount
-      - currency
+      - poll
       - hmac
     properties:
       merchantId:
         type: string
         example: 375917
-      stamp:
-        type: string
-        example: '1233214'
       hmac:
         type: string
         minLength: 10
-      reference:
-        type: string
-      amount:
-        type: integer
-        format: int32
-        minimum: 100
-      currency:
-        type: string
-        example: 'EUR'
+      poll:
+        type: object
+        required:
+          - stamp
+          - reference
+          - amount
+          - currency
+        properties:
+          stamp:
+            type: string
+            example: '1233214'
+          reference:
+            type: string
+          amount:
+            type: integer
+            format: int32
+            minimum: 100
+          currency:
+            type: string
+            example: 'EUR'
 
 
   OpenPayment:

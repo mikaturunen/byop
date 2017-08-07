@@ -30,7 +30,7 @@ describe('Legacy polling wrapper', () => {
 
       body.hmac = crypto
         .createHmac('sha256', 'SAIPPUAKAUPPIAS')
-        .update(new Buffer(JSON.stringify(body)).toString('base64'))
+        .update(new Buffer(JSON.stringify(body.poll)).toString('base64'))
         .digest('hex')
         .toUpperCase()
 
