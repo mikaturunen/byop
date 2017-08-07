@@ -73,6 +73,36 @@ paths:
         "200":
           description: Success
 
+  /v1/payment/poll/single:
+    x-swagger-router-controller: v1/poll
+    post:
+      description: Polls the payment status for given payment.
+      operationId: pollPayment
+      parameters:
+        - in: body
+          name: pollPayment
+          required: true
+          schema:
+            $ref: "#/definitions/BodyPollPayment"
+      responses:
+        "200":
+          description: Success
+
+  /v1/payment/poll/shop-in-shop:
+    x-swagger-router-controller: v1/poll
+    post:
+      description: Polls the payment status for given payment.
+      operationId: pollPaymentShopInShop
+      parameters:
+        - in: body
+          name: pollPaymentShopInShop
+          required: true
+          schema:
+            $ref: "#/definitions/BodyPollPayment"
+      responses:
+        "200":
+          description: Success
+
   /v1/payment/refund:
     x-swagger-router-controller: v1/refund
     post:
@@ -147,6 +177,36 @@ definitions:
             properties:
               email:
                 type: string
+
+  BodyPollPayment:
+    type: object
+    required:
+      - stamp
+      - reference
+      - merchantId
+      - amount
+      - currency
+      - hmac
+    properties:
+      merchantId:
+        type: string
+        example: 375917
+      stamp:
+        type: string
+        example: '1233214'
+      hmac:
+        type: string
+        minLength: 10
+      reference:
+        type: string
+      amount:
+        type: integer
+        format: int32
+        minimum: 100
+      currency:
+        type: string
+        example: 'EUR'
+
 
   OpenPayment:
     required:
