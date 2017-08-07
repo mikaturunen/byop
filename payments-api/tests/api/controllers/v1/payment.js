@@ -43,6 +43,7 @@ describe('Legacy payment wrapper', () => {
         .set('Accepts', 'application/json')
         .send(body)
         .end((error, response) => {
+          console.log(JSON.stringify(response.body, null, 2))
           response.status.should.eql(200)
           response.body.should.be.a('object')
 
