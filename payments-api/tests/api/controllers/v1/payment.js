@@ -27,6 +27,8 @@ describe('Legacy payment wrapper', () => {
 
     it('with a valid payment', done => {
       let body = require('../../../../src/api/mocks/payment.json')
+      // we need to make sure that each test run the stamp is unique
+      body.payment.stamp = body.payment.stamp + new Date().getTime()
 
       console.log('body to post')
       console.log(JSON.stringify(body, null,2 ))

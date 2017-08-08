@@ -32,6 +32,8 @@ describe('Legacy payment wrapper', () => {
     it('with a valid payment', function(done) {
       this.timeout(5000)
       let body = require('../../../../src/api/mocks/payment-shop-in-shop.json')
+      // we need to make sure that each test run the stamp is unique
+      body.payment.stamp = body.payment.stamp + new Date().getTime()
 
       console.log('body to post')
       console.log(JSON.stringify(body, null, 2))
