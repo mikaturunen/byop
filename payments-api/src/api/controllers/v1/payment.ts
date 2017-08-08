@@ -11,7 +11,7 @@ import * as unirest from 'unirest'
 import * as xml2js from 'xml2js'
 import * as R from 'ramda'
 
-export interface LegacyOpenPayment {
+interface LegacyOpenPayment {
   VERSION: string
   STAMP: string
   AMOUNT: number
@@ -58,7 +58,7 @@ const log = bunyan.createLogger({ name: 'v1-payment' })
  * @param {OpenPayment} openPayment The specific payment object.
  * @returns {LegacyOpenPayment} Object that can be used together with Checkouts existing payment wall.
  */
-export const createLegacyOpenPayment = (merchantId: string, merchantSecret: string, openPayment: OpenPayment): LegacyOpenPayment => {
+const createLegacyOpenPayment = (merchantId: string, merchantSecret: string, openPayment: OpenPayment): LegacyOpenPayment => {
   const item = openPayment.items[0]
   if (!item) {
     // we should never really hit this but IF we hit it..
@@ -162,7 +162,7 @@ const openPaymentWall = (payload: LegacyOpenPayment, headers?: {[key: string]: s
  * @param {LegacyOpenPayment} payment Payment object
  * @returns {Promise} Resolves into a LegacyOpenPayment object and on validation errors rejects into set of errors that are client friendly
  */
-export const v1SpecificValidations = (payment: LegacyOpenPayment) => new Promise(
+const v1SpecificValidations = (payment: LegacyOpenPayment) => new Promise(
   // TODO fix reject any type
   (resolve: (payment: LegacyOpenPayment) => void, reject: (error: ClientError) => void) => {
     const capturesValidationErrors: ClientError[] = []

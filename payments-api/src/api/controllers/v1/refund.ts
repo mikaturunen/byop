@@ -1,5 +1,5 @@
 
-import { OpenPayment, ClientError, PaymentWall } from '../../../types'
+import { ClientError, PaymentWall, Refund } from '../../../types'
 import { clientErrors, serverErrors } from '../../helpers/errors'
 import transformLegacyXmlToJson from '../../helpers/transform-legacy-xml-to-json'
 
@@ -11,15 +11,6 @@ import * as bunyan from 'bunyan'
 import * as xml2js from 'xml2js'
 
 const log = bunyan.createLogger({ name: 'v1-refund' })
-
-interface Refund {
-  stamp: string
-  reference: string
-  amount: number
-  receiver: {
-    email: string
-  }
-}
 
 // TODO remove completely once we are done with tests, this is not required at all.
 const SECRET = 'SAIPPUAKAUPPIAS'
@@ -59,41 +50,52 @@ const createLegacyRefund = (merchantId: string, merchantSecret: string, refund: 
     reject: (Error: any) => void
   ) => {
 
-  let rawXml = "<?xml version='1.0'?><checkout><identification><merchant>1234</merchant><stamp>123456</stamp></identification><message><refund><stamp>12345</stamp><reference>12345</reference><amount>1245</amount><receiver><email>email@osoi.te</email></receiver></refund></message></checkout>"
+  let rawXml = `<?xml version='1.0'?>
+      <checkout>
+        <identification>
+          <merchant>${merchantId}</merchant>
+          <stamp>FUCKMYLIFE</stamp>
+        </identification>
+        <message>
+          <refund>
+            <stamp>${refund.stamp}</stamp>
+            <reference>${refund.reference}</reference>
+            <amount>${refund.amount}</amount>
+            <receiver><email>${refund.receiver.email}</email>
+            </receiver>
+          </refund>
+        </message>
+      </checkout>`
 
-  xml2js.parseString(rawXml, (error: any, result: any) => {
-    console.log('created XML:', result)
-    const xml = "PD94bWwgdmVyc2lvbj0nMS4wJz8+PGNoZWNrb3V0PjxpZGVudGlmaWNhdGlvbj48bWVyY2hhbnQ+MTIzNDwvbWVyY2hhbnQ+PHN0YW1wPjEyMzQ1Njwvc3RhbXA+PC9pZGVudGlmaWNhdGlvbj48bWVzc2FnZT48cmVmdW5kPjxzdGFtcD4xMjM0NTwvc3RhbXA+PHJlZmVyZW5jZT4xMjM0NTwvcmVmZXJlbmNlPjxhbW91bnQ+MTI0NTwvYW1vdW50PjxyZWNlaXZlcj48ZW1haWw+ZW1haWxAb3NvaS50ZTwvZW1haWw+PC9yZWNlaXZlcj48L3JlZnVuZD48L21lc3NhZ2U+PC9jaGVja291dD4="
-          //new Buffer(rawXml).toString('base64')
-    const hmac = crypto
-        .createHmac('sha256', merchantSecret)
-        .update(xml)
-        .digest('hex')
-        .toUpperCase()
+  const xml = new Buffer(rawXml).toString('base64')
+  const hmac = crypto
+      .createHmac('sha256', merchantSecret)
+      .update(xml)
+      .digest('hex')
+      .toUpperCase()
 
-    const headers = {
-      //'Content-Type': 'text/html'
-    }
-    const payload = {
-      data: xml,
-      mac: hmac
-    }
-    console.log(payload)
+  const headers = {
+    //'Content-Type': 'text/html'
+  }
+  const payload = {
+    data: xml,
+    mac: hmac
+  }
+  console.log(payload)
 
-    log.info(`Calling legacy refund for merchantId ${merchantId}`)
+  log.info(`Calling legacy refund for merchantId ${merchantId}`)
 
-    // TODO type the resolve and reject once you have figured out the actual xml parsing and handling into a pretty json
-    unirest
-      .post('https://rpcapi.checkout.fi/refund2')
-      .headers(headers)
-      .send(payload)
-      .end((result: any) => {
-        log.info(`Refund replied.. parsing reply`)
+  // TODO type the resolve and reject once you have figured out the actual xml parsing and handling into a pretty json
+  unirest
+    .post('https://rpcapi.checkout.fi/refund2')
+    .headers(headers)
+    .send(payload)
+    .end((result: any) => {
+      log.info(`Refund replied.. parsing reply`)
 
-        console.log('result from xml', result.body)
-        resolve(result)
-      })
-  })
+      console.log('result from xml', result.body)
+      resolve(result)
+    })
 })
 
 /**

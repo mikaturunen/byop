@@ -4,26 +4,9 @@ import * as crypto from 'crypto'
 import { OpenPayment, PaymentSet, ClientError } from '../../types'
 import { clientErrors, serverErrors } from './errors'
 import { validateProperties } from './property-validators'
+import isHmacValid from './hmac-validator'
 
 const log = bunyan.createLogger({ name: 'api-payment-preparation' })
-
-/**
- * Is the given client hmac same as the server side computed hmac
- *
- * @param {string} clientHmac Client calculated HMAC
- * @param {string} merchantSecret Merchants shared secret
- * @param {any} payload Any REST apy BODY payload object.
- * @returns {boolean} True when hmac is valid.
- */
-const isValidHmac = (clientHmac: string, merchantSecret: string, payload: any) => {
-  const calculatedHmac = crypto
-    .createHmac('sha256', merchantSecret)
-    .update(new Buffer(JSON.stringify(payload)).toString('base64'))
-    .digest('hex')
-    .toUpperCase()
-
-  return clientHmac === calculatedHmac
-}
 
 /**
  * Is the given client hmac same as the server side computed hmac
@@ -40,7 +23,7 @@ export const preparePayment = (merchantId: string, merchantSecret: string, clien
     // 1. validate hmac
     log.info(`Checking payment hmac (mid: ${merchantId}, ref: ${payment.reference}, stamp: ${payment.stamp}, amount: ${payment.totalAmount})`)
 
-    if (!isValidHmac(clientHmac, merchantSecret, payment)) {
+    if (!isHmacValid<OpenPayment>(clientHmac, merchantSecret, payment)) {
       log.warn(`Hmac validation for ${merchantId} failed. Incorrect hmac was: ${clientHmac}.`)
       reject(clientErrors.hmac)
       return

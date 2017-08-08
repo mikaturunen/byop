@@ -74,3 +74,19 @@ export interface Merchant {
   email: string
   vatId: string
 }
+
+export interface Poll {
+  stamp: string
+  reference: string
+  amount: number
+  currency: string
+}
+
+export interface Refund {
+  stamp: string
+  reference: string
+  amount: number
+  receiver: {
+    email: string
+  }
+}

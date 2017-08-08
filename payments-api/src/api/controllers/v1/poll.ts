@@ -1,7 +1,8 @@
 
-import { OpenPayment, ClientError, PaymentWall } from '../../../types'
+import { Poll, ClientError, PaymentWall } from '../../../types'
 import { clientErrors, serverErrors } from '../../helpers/errors'
 import transformLegacyXmlToJson from '../../helpers/transform-legacy-xml-to-json'
+import isHmacValid from '../../helpers/hmac-validator'
 
 import * as express from 'express'
 import * as crypto from 'crypto'
@@ -12,37 +13,47 @@ import * as xml2js from 'xml2js'
 
 const log = bunyan.createLogger({ name: 'v1-poll' })
 
-interface Poll {
-  stamp: string
-  reference: string
-  amount: number
-  currency: string
+/**
+ * Format Checkouts API requires and otherwise the application does not care for.
+ */
+interface LegacyPoll {
+  VERSION: '0001'|'0002'
+  STAMP: string
+  REFERENCE: string
+  MERCHANT: string
+  AMOUNT: number
+  CURRENCY: string
+  FORMAT: 1
+  ALGORITHM: 1
+  MAC: string
 }
 
 // TODO remove completely once we are done with tests, this is not required at all.
 const SECRET = 'SAIPPUAKAUPPIAS'
+// Constant values for single payment that will never change for the legacy API
+const SINGLE_REFUND_VERSION = '0001'
+const FORMAT = 1
+const ALGORITHM = 1
 
+/**
+ * Converts LegacyPoll object into a strintified series of values concatenated together with '+' -character. This value
+ * string is used to calculate checkouts legacy apis hash.
+ *
+ * @param {}
+ * @param {}
+ * @returns {string}
+ */
 const toValueString = (
-    poll: Poll,
+    poll: LegacyPoll,
     merchantId: string
-  ) => `0001+${poll.stamp}+${poll.reference}+${merchantId}+${poll.amount}+${poll.currency}+1+1`
+  ) => `${poll.VERSION}+${poll.STAMP}+${poll.REFERENCE}+${merchantId}+${poll.AMOUNT}+${poll.CURRENCY}+${poll.FORMAT}+${poll.ALGORITHM}`
 
 const preparePoll = (merchantId: string, merchantSecret: string, clientHmac: string, poll: Poll) => new Promise((
     resolve: (refund: any) => void,
     reject: (errro: any) => void
   ) => {
 
-  const isValidHmac = (clientHmac: string, merchantSecret: string, payload: any) => {
-    const calculatedHmac = crypto
-      .createHmac('sha256', merchantSecret)
-      .update(new Buffer(JSON.stringify(payload)).toString('base64'))
-      .digest('hex')
-      .toUpperCase()
-
-    return clientHmac === calculatedHmac
-  }
-
-  if (!isValidHmac(clientHmac, merchantSecret, poll)) {
+  if (!isHmacValid<Poll>(clientHmac, merchantSecret, poll)) {
     // TODO start using same validation for all APIs that take in the property validators after the hmac as parameters
     log.warn(`Hmac validation for ${merchantId} failed in poll. Incorrect hmac was: ${clientHmac}.`)
     reject(clientErrors.hmac)
@@ -57,23 +68,26 @@ const preparePoll = (merchantId: string, merchantSecret: string, clientHmac: str
   })
 })
 
+
+
 const createLegacyPoll = (merchantId: string, merchantSecret: string, poll: Poll) => new Promise((
     resolve: (response: any) => void,
     reject: (Error: any) => void
   ) => {
 
-  const legacyPoll = {
-    VERSION: '0001',
+  const legacyPoll: LegacyPoll = {
+    VERSION: SINGLE_REFUND_VERSION,
     STAMP: poll.stamp,
     REFERENCE: poll.reference,
     MERCHANT: merchantId,
     AMOUNT: poll.amount,
     CURRENCY: poll.currency,
-    FORMAT: 1,
-    ALGORITHM: 1,
+    FORMAT,
+    ALGORITHM,
     MAC: ''
   }
-  const values = `${toValueString(poll, merchantId)}+${merchantSecret}`
+
+  const values = `${toValueString(legacyPoll, merchantId)}+${merchantSecret}`
   // the old poll layer wall uses md5... what the hell. This is unbelievable.
   legacyPoll.MAC = crypto.createHash('md5')
     .update(values)
@@ -82,6 +96,7 @@ const createLegacyPoll = (merchantId: string, merchantSecret: string, poll: Poll
 
   console.log(Object.keys(legacyPoll).map(key => `${key}=${legacyPoll[key]}`))
   console.log(values)
+  console.log()
 
   unirest
     .post('https://rpcapi.checkout.fi/poll')
@@ -115,9 +130,6 @@ export const pollPayment = (request: express.Request, response: express.Response
 
   preparePoll(merchantId, merchantSecret, clientHmac, poll)
     .then(paymentSet => createLegacyPoll(paymentSet.merchantId, paymentSet.merchantSecret, paymentSet.poll))
-   // .then(payment => v1SpecificValidations(payment))
-   // .then(payment => openPaymentWall(payment))
-   // .then(paymentWallXml => transformLegacyXmlToJson(paymentWallXml))
     .then(result => {
       response.json(result)
       log.info(`End poll for merchant ${merchantId}`)

@@ -85,8 +85,7 @@ const openPaymentWall = (payload: LegacyOpenPaymentSis, headers?: {[key: string]
 export const createLegacyOpenPayment = (merchantId: string, merchantSecret: string, payment: OpenPayment): LegacyOpenPaymentSis => {
   // TODO Clean up this string crap into a simple xml lib as soon as it's tested to work properly
 
-  let rawXml = `
-    <?xml version="1.0"?>
+  let rawXml = `<?xml version="1.0"?>
     <checkout xmlns="http://checkout.fi/request">
       <request type="aggregator" test="false">
         <aggregator>${merchantId}</aggregator>
