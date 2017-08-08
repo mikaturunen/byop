@@ -45,12 +45,13 @@ const openPaymentWall = (payload: LegacyOpenPaymentSis, headers?: {[key: string]
 
   log.info(`Opening sis payment wall.`)
 
-  // TODO type the resolve and reject once you have figured out the actual xml parsing and handling into a pretty json
   return new Promise((resolve: any, reject: (error: ClientError) => void) => unirest
     .post('https://payment.checkout.fi')
     .headers(headers)
     .send(payload)
     .end((result: any) => {
+        // TODO resolve promise needs a type that we communicate to the frontend.
+      // TODO Conver the result XML content into a proper json object
       log.info(`Payment wall replied.. parsing reply`)
       // First make sure we have handled the http error codes
       if (successCodes.indexOf(result.code) === -1) {
@@ -85,33 +86,31 @@ const openPaymentWall = (payload: LegacyOpenPaymentSis, headers?: {[key: string]
 export const createLegacyOpenPayment = (merchantId: string, merchantSecret: string, payment: OpenPayment): LegacyOpenPaymentSis => {
   // TODO Clean up this string crap into a simple xml lib as soon as it's tested to work properly
 
-  let rawXml = `<?xml version="1.0"?>
-    <checkout xmlns="http://checkout.fi/request">
-      <request type="aggregator" test="false">
+  let rawXml = `<?xml version='1.0'?>
+    <checkout xmlns='http://checkout.fi/request'>
+      <request type='aggregator' test='false'>
         <aggregator>${merchantId}</aggregator>
         <version>${VERSION}</version>
         <stamp>${payment.stamp}</stamp>
-        <reference>${payment.reference}</reference>
-        <description></description>
+        <reference>1501589373178</reference>
+        <description>Test</description>
         <device>${DEVICE}</device>
         <content>${payment.content}</content>
         <type>${TYPE}</type>
         <algorithm>${ALGORITHM}</algorithm>
         <currency>${payment.currency}</currency>
-        <token>false</token>
-        <commit>true</commit>
+        <commit>false</commit>
         <items>
         `
 
   payment.items.forEach(item => {
     // TODO item level control element, name it to something that makes more sense.
 
-    rawXml = rawXml + `
-          <item>
+    rawXml = rawXml + `<item>
             <code>${item.categoryCode}</code>
             <stamp>${item.stamp}</stamp>
             <description>${item.description}</description>
-            <price currency="${payment.currency}" vat="${item.vatPercentage}">${item.amount}</price>
+            <price currency='${payment.currency}' vat='${item.vatPercentage}'>${item.amount}</price>
             <merchant>${item.merchant.id}</merchant>
             <control></control>
             <reference>${item.reference}</reference>
@@ -119,23 +118,19 @@ export const createLegacyOpenPayment = (merchantId: string, merchantSecret: stri
           `
   })
 
-  rawXml = rawXml + `
-          <amount currency="${payment.currency}">${payment.totalAmount}</amount>
-          `
+  rawXml = rawXml + `<amount currency="${payment.currency}">${payment.totalAmount}</amount>`
 
   // TODO fix delivery.date element from payment.items[0].deliveryDate to be payment.delivery.date as the legacy api requires this.
-  rawXml = rawXml + `
-        </items>
-        <buyer>
-          <company vatid=""></company>
+  rawXml = rawXml + `</items>
+        <buyer vatid=''>
           <firstname>${payment.customer.firstName}</firstname>
           <familyname>${payment.customer.lastName}</familyname>
-          <address><![CDATA[ ]]></address>
-          <postalcode></postalcode>
-          <postaloffice></postaloffice>
+          <address> </address>
+          <postalcode> </postalcode>
+          <postaloffice> </postaloffice>
           <country>${payment.country}</country>
           <email>${payment.customer.email}</email>
-          <gsm></gsm>
+          <gsm> </gsm>
           <language>${payment.language}</language>
         </buyer>
         <delivery>
@@ -143,12 +138,12 @@ export const createLegacyOpenPayment = (merchantId: string, merchantSecret: stri
           <company vatid=""></company>
           <firstname>${payment.customer.firstName}</firstname>
           <familyname>${payment.customer.lastName}</familyname>
-          <address><![CDATA[ ]]></address>
-          <postalcode></postalcode>
-          <postaloffice></postaloffice>
+          <address> </address>
+          <postalcode> </postalcode>
+          <postaloffice> </postaloffice>
           <country>${payment.country}</country>
           <email>${payment.customer.email}</email>
-          <gsm></gsm>
+          <gsm> </gsm>
           <language>${payment.language}</language>
         </delivery>
         <control type="default">
@@ -160,79 +155,6 @@ export const createLegacyOpenPayment = (merchantId: string, merchantSecret: stri
       </request>
     </checkout>
   `
-
-  rawXml = `<?xml version='1.0'?>
-<checkout xmlns='http://checkout.fi/request'>
-    <request type='aggregator' test='false'>
-        <aggregator>375917</aggregator>
-        <version>0002</version>
-        <stamp>1501589373178</stamp>
-        <reference>1501589373178</reference>
-        <description>Test</description>
-        <device>10</device>
-        <content>1</content>
-        <type>0</type>
-        <algorithm>3</algorithm>
-        <currency>EUR</currency>
-        <commit>false</commit>
-        <items>
-            <item>
-                <code>2859</code>
-                <stamp>1501589373179</stamp>
-                <description>Description 1</description>
-                <price currency='EUR' vat='24'>182</price>
-                <merchant>391830</merchant>
-                <reference>1501589373179</reference>
-            </item>
-            <item>
-                <code>321</code>
-                <stamp>1501589373180</stamp>
-                <description>Description 2</description>
-                <price currency='EUR' vat='24'>132</price>
-                <merchant>391830</merchant>
-                <reference>1501589373180</reference>
-            </item>
-            <item>
-                <code>1084188</code>
-                <stamp>1501589373181</stamp>
-                <description>Description 3</description>
-                <price currency='EUR' vat='24'>253</price>
-                <merchant>391830</merchant>
-                <reference>1501589373181</reference>
-            </item>
-            <amount currency='EUR'>567</amount>
-        </items>
-        <buyer vatid=''>
-            <country>FIN</country>
-            <language>FI</language>
-            <firstname> </firstname>
-            <familyname> </familyname>
-            <address> </address>
-            <postalcode> </postalcode>
-            <postaloffice> </postaloffice>
-            <email> </email>
-            <gsm> </gsm>
-        </buyer>
-        <delivery>
-            <company vatid=''></company>
-            <firstname> </firstname>
-            <familyname> </familyname>
-            <address> </address>
-            <postalcode> </postalcode>
-            <postaloffice> </postaloffice>
-            <country> </country>
-            <email> </email>
-            <gsm> </gsm>
-            <language> </language>
-            <date>20170616</date>
-        </delivery>
-        <control type='default'>
-            <return>http://google.com</return>
-            <reject>http://google.com</reject>
-            <cancel>http://google.com</cancel>
-        </control>
-    </request>
-</checkout>`
 
   // TODO mask all person specific information from the log files with per property:
   // foo.substring(0, 2) + foo.substring(2, foo.length-2).replace(/\S/gi, '*') + foo.substring(foo.length-2, foo.length)
@@ -271,7 +193,6 @@ export const createLegacyOpenPayment = (merchantId: string, merchantSecret: stri
  * @returns {Promise} Resolves into a LegacyOpenPayment object and on validation errors rejects into set of errors that are client friendly
  */
 export const v1SpecificValidations = (payment: LegacyOpenPaymentSis) => new Promise(
-  // TODO fix reject any type
   (resolve: (payment: LegacyOpenPaymentSis) => void, reject: (error: ClientError) => void) => {
     const capturesValidationErrors: ClientError[] = []
 

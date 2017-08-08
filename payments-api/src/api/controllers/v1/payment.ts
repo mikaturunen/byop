@@ -2,8 +2,8 @@
 import { OpenPayment, ClientError, PaymentWall } from '../../../types'
 import { clientErrors, serverErrors } from '../../helpers/errors'
 import { preparePayment } from '../../helpers/payment-preparation'
-import transformXmlToJson from '../../helpers/transform-legacy-xml-to-json'
 import transformLegacyXmlToJson from '../../helpers/transform-legacy-xml-to-json'
+import toValueString from '../../helpers/value-stringifier'
 
 import * as express from 'express'
 import * as crypto from 'crypto'
@@ -95,7 +95,16 @@ const createLegacyOpenPayment = (merchantId: string, merchantSecret: string, ope
     SECRET_KEY: merchantSecret
   }
 
-  let values = toValueString(legacyOpenPayment)
+  const values = toValueString<LegacyOpenPayment>(
+    legacyOpenPayment,
+    [
+      'VERSION', 'STAMP', 'AMOUNT', 'REFERENCE', 'MESSAGE', 'LANGUAGE', 'MERCHANT', 'RETURN', 'CANCEL', 'REJECT',
+      'DELAYED', 'COUNTRY', 'CURRENCY', 'DEVICE', 'CONTENT', 'TYPE', 'ALGORITHM', 'DELIVERY_DATE', 'FIRSTNAME', 'FAMILYNAME',
+      'ADDRESS', 'POSTCODE', 'POSTOFFICE', 'SECRET_KEY'
+    ],
+    '+'
+  )
+
   // the old payment wall uses md5...
   legacyOpenPayment.MAC = crypto.createHash('md5')
     .update(values)
@@ -128,12 +137,13 @@ const openPaymentWall = (payload: LegacyOpenPayment, headers?: {[key: string]: s
 
   log.info(`Opening payment wall.`)
 
-  // TODO type the resolve and reject once you have figured out the actual xml parsing and handling into a pretty json
   return new Promise((resolve: any, reject: (error: ClientError) => void) => unirest
     .post('https://payment.checkout.fi')
     .headers(headers)
     .send(payload)
     .end((result: any) => {
+      // TODO resolve promise needs a type that we communicate to the frontend.
+      // TODO Conver the result XML content into a proper json object
       log.info(`Payment wall replied.. parsing reply`)
       // First make sure we have handled the http error codes
       if (successCodes.indexOf(result.code) === -1) {
@@ -163,7 +173,6 @@ const openPaymentWall = (payload: LegacyOpenPayment, headers?: {[key: string]: s
  * @returns {Promise} Resolves into a LegacyOpenPayment object and on validation errors rejects into set of errors that are client friendly
  */
 const v1SpecificValidations = (payment: LegacyOpenPayment) => new Promise(
-  // TODO fix reject any type
   (resolve: (payment: LegacyOpenPayment) => void, reject: (error: ClientError) => void) => {
     const capturesValidationErrors: ClientError[] = []
     // one of the legacy quirks
@@ -183,22 +192,6 @@ const v1SpecificValidations = (payment: LegacyOpenPayment) => new Promise(
     }
   }
 )
-
-/**
- * Converts the LegacyOpenPayment into a value string for md5 MAC calculation the old payment wall requires.
- *
- * @param {LegacyOpenPayment} payment Payment object
- * @returns {string} String concantenation of the mac calculation ready values of the payment object.
- */
-const toValueString = (payment: LegacyOpenPayment) => {
-  let valueString =  `${payment.VERSION}+${payment.STAMP}+${payment.AMOUNT}+${payment.REFERENCE}+${payment.MESSAGE}+`
-      valueString += `${payment.LANGUAGE}+${payment.MERCHANT}+${payment.RETURN}+${payment.CANCEL}+${payment.REJECT}+`
-      valueString += `${payment.DELAYED}+${payment.COUNTRY}+${payment.CURRENCY}+${payment.DEVICE}+${payment.CONTENT}+`
-      valueString += `${payment.TYPE}+${payment.ALGORITHM}+${payment.DELIVERY_DATE}+${payment.FIRSTNAME}+${payment.FAMILYNAME}+`
-      valueString += `${payment.ADDRESS}+${payment.POSTCODE}+${payment.POSTOFFICE}+${payment.SECRET_KEY}`
-
-  return valueString
-}
 
 // TODO remove completely once we are done with tests, this is not required at all.
 const SECRET = 'SAIPPUAKAUPPIAS'

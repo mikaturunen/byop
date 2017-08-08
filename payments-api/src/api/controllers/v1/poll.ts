@@ -3,6 +3,7 @@ import { Poll, ClientError, PaymentWall } from '../../../types'
 import { clientErrors, serverErrors } from '../../helpers/errors'
 import transformLegacyXmlToJson from '../../helpers/transform-legacy-xml-to-json'
 import isHmacValid from '../../helpers/hmac-validator'
+import toValueString from '../../helpers/value-stringifier'
 
 import * as express from 'express'
 import * as crypto from 'crypto'
@@ -28,6 +29,13 @@ interface LegacyPoll {
   MAC: string
 }
 
+interface PollSet {
+  merchantId: string
+  merchantSecret: string
+  clientHmac: string
+  poll: Poll
+}
+
 // TODO remove completely once we are done with tests, this is not required at all.
 const SECRET = 'SAIPPUAKAUPPIAS'
 // Constant values for single payment that will never change for the legacy API
@@ -35,22 +43,9 @@ const SINGLE_REFUND_VERSION = '0001'
 const FORMAT = 1
 const ALGORITHM = 1
 
-/**
- * Converts LegacyPoll object into a strintified series of values concatenated together with '+' -character. This value
- * string is used to calculate checkouts legacy apis hash.
- *
- * @param {}
- * @param {}
- * @returns {string}
- */
-const toValueString = (
-    poll: LegacyPoll,
-    merchantId: string
-  ) => `${poll.VERSION}+${poll.STAMP}+${poll.REFERENCE}+${merchantId}+${poll.AMOUNT}+${poll.CURRENCY}+${poll.FORMAT}+${poll.ALGORITHM}`
-
 const preparePoll = (merchantId: string, merchantSecret: string, clientHmac: string, poll: Poll) => new Promise((
-    resolve: (refund: any) => void,
-    reject: (errro: any) => void
+    resolve: (pollSet: PollSet) => void,
+    reject: (errro: ClientError) => void
   ) => {
 
   if (!isHmacValid<Poll>(clientHmac, merchantSecret, poll)) {
@@ -67,7 +62,6 @@ const preparePoll = (merchantId: string, merchantSecret: string, clientHmac: str
     poll
   })
 })
-
 
 
 const createLegacyPoll = (merchantId: string, merchantSecret: string, poll: Poll) => new Promise((
@@ -87,8 +81,20 @@ const createLegacyPoll = (merchantId: string, merchantSecret: string, poll: Poll
     MAC: ''
   }
 
-  const values = `${toValueString(legacyPoll, merchantId)}+${merchantSecret}`
-  // the old poll layer wall uses md5... what the hell. This is unbelievable.
+  /**
+   * Temporary interface we use to make sure we match a type as defined
+   */
+  interface TemporaryPollReducer extends LegacyPoll {
+    merchantSecret: string
+  }
+
+  const values = toValueString<TemporaryPollReducer>(
+    { ...legacyPoll, merchantSecret },
+    [ 'VERSION', 'STAMP', 'REFERENCE', 'MERCHANT', 'AMOUNT', 'CURRENCY', 'FORMAT', 'ALGORITHM', 'merchantSecret' ],
+    '+'
+  )
+
+  // the old poll layer wall uses md5... what the hell. This is unbelievable. Not much we can do about that here.
   legacyPoll.MAC = crypto.createHash('md5')
     .update(values)
     .digest('hex')
