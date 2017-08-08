@@ -12,6 +12,4 @@ const pong = (request: express.Request, response: express.Response) => {
   })
 }
 
-module.exports = {
-  pong: pong
-}
+export default pong

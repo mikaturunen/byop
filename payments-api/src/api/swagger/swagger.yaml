@@ -32,17 +32,6 @@ paths:
   /swagger:
     x-swagger-pipe: swagger_raw
 
-  /ping:
-    x-swagger-router-controller: ping
-    get:
-      description: pong
-      operationId: pong
-      responses:
-        "200":
-          description: Success
-          schema:
-            $ref: "#/definitions/PingResponse"
-
   /v1/payment/open/single:
     x-swagger-router-controller: v1/payment
     post:
@@ -378,20 +367,3 @@ definitions:
         type: string
         maxLength: 100
         minLength: 5
-
-  PingResponse:
-    required:
-      - message
-      - time
-    properties:
-      message:
-        type: string
-      time:
-        type: number
-
-  ErrorResponse:
-    required:
-      - message
-    properties:
-      message:
-        type: string
