@@ -7,22 +7,17 @@
     "build": "concurrently \"npm run compile\" \"npm run copy-static\" ",
     "compile": "tsc -p tsconfig.json",
     "copy-static": "cpx --clean -v \"src/**/*.{yaml,json}\" build",
-
-    "dev": "concurrently \"npm run compile-dev\" \"npm run copy-static-dev\" \"npm run start-dev\" ",
-    "compile-dev": "tsc -p tsconfig.json --watch",
-    "copy-static-dev": "cpx --clean -v \"src/**/*.{yaml,json}\" build --watch",
-
-    "start": "node build/app.js",
-    "start-dev": "nodemon --ext '.yaml|.ts|.json' -w build build/app.js",
-    "start1": "webpack --config webpack/webpack.js --watch"
+    "postinstall": "npm run build",
+    "start": "node build/app.js"
   },
   "author": "Mika Turunen",
   "license": "MIT",
   "dependencies": {
     "body-parser": "^1.17.2",
-    "bunyan": "^1.8.10",
+    "bunyan": "^1.8.12",
     "copy-webpack-plugin": "^4.0.1",
     "express": "^4.15.3",
+    "locutus": "^2.0.9",
     "ramda": "^0.24.1",
     "swagger-express-mw": "^0.7.0",
     "unirest": "^0.5.1",

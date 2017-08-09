@@ -47,7 +47,10 @@ swaggerMiddleware.create(config, (error: Error, swaggerExpress: { register: (app
     app.get('*', (_: express.Request, response: express.Response) => response.status(401).send())
   }
 
-  app.listen(port, _ => log.info(`API overlay listening on port ${port}!`))
+  app.listen(port, _ => {
+    log.info(`API overlay listening on port ${port}!`)
+    log.info(`Running in ${process.env['NODE_ENV'] === 'production' ? 'production' : 'development'} mode.`)
+  })
 })
 
 // This is only used so we can actually require the whole express.js structure in test frameworks for testing purposes
