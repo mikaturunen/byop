@@ -6,3 +6,4 @@ src/**/*.js
 *.tfstate.backup
 .terraform
 .swagger-codegen
+.DS_Store
