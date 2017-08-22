@@ -1,0 +1,17 @@
+{
+  "name": "jobs",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "build": "npm run compile && npm run copy-static",
+    "compile": "./node_modules/typescript/bin/tsc -p tsconfig.json",
+    "copy-static": "./node_modules/cpx/bin/index.js --clean --verbose 'src/**/*.{yaml,json}' build ",
+    "start": "node ./build/app.js"
+  },
+  "author": "Mika Turunen",
+  "dependencies": {
+    "cpx": "^1.5.0",
+    "typescript": "^2.3.4"
+  }
+}
