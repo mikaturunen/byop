@@ -1,5 +1,121 @@
 {
-  "key1": "test",
-  "key2": "test1",
-  "key3": "test2"
+  "merchantPayments": [
+    {
+      "merchant": {
+        "id": 1,
+        "type": "NORMAL",
+        "parent": 666
+      },
+      "pspFee": {
+        "amount": 2,
+        "toMerchantId": 666
+      },
+      "sisFee": {
+        "amount": 0,
+        "toMerchantId": 0
+      },
+      "income": {
+        "amount": 98,
+        "toMerchantId": 1
+      }
+    },
+    {
+      "merchant": {
+        "id": 1,
+        "type": "NORMAL",
+        "parent": 666
+      },
+      "pspFee": {
+        "amount": 34,
+        "toMerchantId": 666
+      },
+      "sisFee": {
+        "amount": 0,
+        "toMerchantId": 0
+      },
+      "income": {
+        "amount": 1646,
+        "toMerchantId": 1
+      }
+    },
+    {
+      "merchant": {
+        "id": 1,
+        "type": "NORMAL",
+        "parent": 666
+      },
+      "pspFee": {
+        "amount": 40,
+        "toMerchantId": 666
+      },
+      "sisFee": {
+        "amount": 0,
+        "toMerchantId": 0
+      },
+      "income": {
+        "amount": 1960,
+        "toMerchantId": 1
+      }
+    },
+
+
+
+    {
+      "merchant": {
+        "id": 3,
+        "type": "SIS-SLAVE",
+        "parent": 2
+      },
+      "pspFee": {
+        "amount": 2,
+        "toMerchantId": 666
+      },
+      "sisFee": {
+        "amount": 1,
+        "toMerchantId": 2
+      },
+      "income": {
+        "amount": 97,
+        "toMerchantId": 1
+      }
+    },
+    {
+      "merchant": {
+        "id": 3,
+        "type": "SIS-SLAVE",
+        "parent": 2
+      },
+      "pspFee": {
+        "amount": 34,
+        "toMerchantId": 666
+      },
+      "sisFee": {
+        "amount": 10,
+        "toMerchantId": 2
+      },
+      "income": {
+        "amount": 1636,
+        "toMerchantId": 1
+      }
+    },
+    {
+      "merchant": {
+        "id": 3,
+        "type": "SIS-SLAVE",
+        "parent": 2
+      },
+      "pspFee": {
+        "amount": 40,
+        "toMerchantId": 666
+      },
+      "sisFee": {
+        "amount": 10,
+        "toMerchantId": 2
+      },
+      "income": {
+        "amount": 1950,
+        "toMerchantId": 1
+      }
+    }
+  ]
 }

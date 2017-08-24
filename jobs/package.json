@@ -12,6 +12,7 @@
   "author": "Mika Turunen",
   "dependencies": {
     "cpx": "^1.5.0",
+    "ramda": "^0.24.1",
     "typescript": "^2.3.4"
   }
 }

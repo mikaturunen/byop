@@ -1,0 +1,307 @@
+{
+  "merchants-note": "merchants is here only for brewity, won't be used in real data like this but this makes it easier to understand this example",
+  "merchants": [
+    {
+      "name": "normal merchant",
+      "id": 202,
+      "contract": 20
+    },
+    {
+      "name": "sis-merchant",
+      "id": 30,
+      "contract": 300
+    },
+    {
+      "name": "sis-sub1",
+      "id": 1000,
+      "contract": 300
+    },
+    {
+      "name": "sis-sub2",
+      "id": 1231,
+      "contract": 300
+    },
+    {
+      "name": "sis-sub3-merchant",
+      "note": "This is actually a shop ran by mid: '30' and they keep the control as 0",
+      "id": 1231,
+      "contract": 300
+    }
+  ],
+
+  "contracts-note": "contracts is here only for brewity, won't be used in real data like this but this makes it easier to understand this example",
+  "contracts": [
+    {
+      "id": 1,
+      "costs": [
+        {
+          "NORD": [{
+            "operand": "minus",
+            "amount": 0.49
+          }]
+        },
+        {
+          "SBANK": [{
+            "operand": "minus",
+            "amount": 0.35
+          }]
+        },
+        {
+          "MC": [
+            {
+              "operand": "multiply",
+              "amount": 0.02
+            },
+            {
+              "operand": "minus",
+              "amount": 0.35
+            }
+          ]
+        },
+        {
+          "TOKEN": [
+            {
+              "operand": "minus",
+              "amount": 0.10
+            }
+          ]
+        }
+      ]
+    }
+  ],
+
+  "payments-note": "These are the actual payments we are interested - they are built with the help of the above properties",
+  "payments": [
+    {
+      "id": 1,
+      "amount": 100,
+      "merchantId": 202,
+      "income": 49,
+      "forMerchant": 51,
+      "status": "PAID",
+      "paymentMethod": "NORD",
+      "contract": {
+        "id": 1,
+        "costs": [
+          {
+            "NORD": [{
+              "operand": "minus",
+              "amount": 0.49
+            }]
+          },
+          {
+            "SBANK": [{
+              "operand": "minus",
+              "amount": 0.35
+            }]
+          },
+          {
+            "MC": [
+              {
+                "operand": "multiply",
+                "amount": 0.02
+              },
+              {
+                "operand": "minus",
+                "amount": 0.35
+              }
+            ]
+          },
+          {
+            "TOKEN": [
+              {
+                "operand": "minus",
+                "amount": 0.10
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 2,
+      "amount": 100,
+      "merchantId": 202,
+      "income": 35,
+      "forMerchant": 65,
+      "status": "PAID",
+      "paymentMethod": "SBANK",
+      "contract": {
+        "id": 1,
+        "costs": [
+          {
+            "NORD": [{
+              "operand": "minus",
+              "amount": 0.49
+            }]
+          },
+          {
+            "SBANK": [{
+              "operand": "minus",
+              "amount": 0.35
+            }]
+          },
+          {
+            "MC": [
+              {
+                "operand": "multiply",
+                "amount": 0.02
+              },
+              {
+                "operand": "minus",
+                "amount": 0.35
+              }
+            ]
+          },
+          {
+            "TOKEN": [
+              {
+                "operand": "minus",
+                "amount": 0.10
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 3,
+      "amount": 1000,
+      "merchantId": 1000,
+      "income": 35,
+      "forMerchant": 975,
+      "status": "PAID",
+      "paymentMethod": "SBANK",
+      "contract": {
+        "id": 1,
+        "costs": [
+          {
+            "NORD": [{
+              "operand": "minus",
+              "amount": 0.49
+            }]
+          },
+          {
+            "SBANK": [{
+              "operand": "minus",
+              "amount": 0.35
+            }]
+          },
+          {
+            "MC": [
+              {
+                "operand": "multiply",
+                "amount": 0.02
+              },
+              {
+                "operand": "minus",
+                "amount": 0.35
+              }
+            ]
+          },
+          {
+            "TOKEN": [
+              {
+                "operand": "minus",
+                "amount": 0.10
+              }
+            ]
+          }
+        ]
+      }
+
+    },
+    {
+      "id": 4,
+      "amount": 1000,
+      "merchantId": 1000,
+      "income": 55,
+      "forMerchant": 945,
+      "status": "PAID",
+      "paymentMethod": "MC",
+      "contract": {
+        "id": 1,
+        "costs": [
+          {
+            "NORD": [{
+              "operand": "minus",
+              "amount": 0.49
+            }]
+          },
+          {
+            "SBANK": [{
+              "operand": "minus",
+              "amount": 0.35
+            }]
+          },
+          {
+            "MC": [
+              {
+                "operand": "multiply",
+                "amount": 0.02
+              },
+              {
+                "operand": "minus",
+                "amount": 0.35
+              }
+            ]
+          },
+          {
+            "TOKEN": [
+              {
+                "operand": "minus",
+                "amount": 0.10
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 4,
+      "amount": 1000,
+      "merchantId": 1000,
+      "income": 65,
+      "forMerchant": 935,
+      "status": "PAID",
+      "paymentMethod": "MC_TOKEN",
+      "contract": {
+        "id": 1,
+        "costs": [
+          {
+            "NORD": [{
+              "operand": "minus",
+              "amount": 0.49
+            }]
+          },
+          {
+            "SBANK": [{
+              "operand": "minus",
+              "amount": 0.35
+            }]
+          },
+          {
+            "MC": [
+              {
+                "operand": "multiply",
+                "amount": 0.02
+              },
+              {
+                "operand": "minus",
+                "amount": 0.35
+              }
+            ]
+          },
+          {
+            "TOKEN": [
+              {
+                "operand": "minus",
+                "amount": 0.10
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}
